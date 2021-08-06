@@ -25,6 +25,7 @@ class User:
     def __init__(self, update):
         self.id = update.effective_user.id
         self.chatId = users.get(USER.id==self.id)["chatId"]
+        self.selection = users.get(USER.id==self.id)["menuSelection"]
 
     def grantAdmin(self):
         users.update({"admin": True}, USER.id==self.id)
@@ -49,6 +50,9 @@ class User:
     def delete(self):
         users.remove(USER.id == self.id)
 
+    def __del__(self):
+        users.update({"menuSelection": self.selection}, USER.id == self.id)
+
 
 ###########
 # Methods #
@@ -60,7 +64,8 @@ def createUser(userId, chatId, name, authorized=False, admin=False):
                       "chatId": chatId,
                       "name": name,
                       "authorized": authorized,
-                      "admin": admin})
+                      "admin": admin,
+                      "menuSelection": []})
 
 def getAuthorizedUsersId():
     authorizedUsers = users.search(USER.authorized == True)

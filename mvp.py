@@ -20,7 +20,10 @@ dispatcher = updater.dispatcher
 
 
 # Decorators and utilities
-isAdminMenu = lambda data: "admin" in data
+patterns = {
+    "mainMenu": lambda data: "admin" not in data,
+    "adminMenu": lambda data: "admin" in data,
+}
 
 def commandHandler(func):
     """Registers a function as a command handler."""
@@ -28,13 +31,13 @@ def commandHandler(func):
     dispatcher.add_handler(handler)
     return func
 
-
-def callbackHandler(func):
-    """Registers a function as a command handler."""
-    handler = CallbackQueryHandler(func)
-    dispatcher.add_handler(handler)
-    return func
-
+def callbackHandler(pattern=None):
+    def decorator(func):
+        """Registers a function as a command handler."""
+        handler = CallbackQueryHandler(func, pattern=pattern)
+        dispatcher.add_handler(handler)
+        return func
+    return decorator
 
 def noBot(func):
     """Prohibits access to robots."""
@@ -84,14 +87,14 @@ def start(update, context):
 def menu(update, context, user):
     oldMenuId = user.getMenuMessageId()
     if oldMenuId:
-        context.user_data["selection"] = []
+        user.selection = []
         context.bot.delete_message(user.chatId, oldMenuId)
     replyMarkup = InlineKeyboardMarkup(build_menu(menus["main"]["buttons"], n_cols=2))
     message = context.bot.send_message(user.chatId, menus["main"]["message"], reply_markup=replyMarkup)
     user.setMenuMessageId(message.message_id)
 
 
-@callbackHandler
+@callbackHandler(patterns["mainMenu"])
 @noBot
 @restrictedToAuthorizedUsers
 def callback(update, context, user):
@@ -99,22 +102,22 @@ def callback(update, context, user):
     query = update.callback_query
     data = query.data
     query.answer()
-    context.user_data["selection"].append(data)
+    user.selection.append(data)
     if data == "home":
         scene = menus["main"]
-        context.user_data["selection"].clear()
-    if len(context.user_data["selection"]) == 1:
+        user.selection.clear()
+    if len(user.selection) == 1:
         scene = menus[data+"Select"]
-    elif len(context.user_data["selection"]) == 2:
-        scene = menus[context.user_data["selection"][0]+"Action"]
-    elif len(context.user_data["selection"]) == 3:
+    elif len(user.selection) == 2:
+        scene = menus[user.selection[0]+"Action"]
+    elif len(user.selection) == 3:
         scene = menus["main"]
         context.bot.send_chat_action(user.chatId, telegram.ChatAction.TYPING)
         # ACTION
-        context.bot.send_message(user.chatId, context.user_data["selection"])
-        context.user_data["selection"].clear()
+        context.bot.send_message(user.chatId, user.selection)
+        user.selection.clear()
     buttons = scene["buttons"]
-    if context.user_data["selection"]:
+    if user.selection:
         buttons = [*buttons, InlineKeyboardButton("< Home", callback_data="home")]
     replyMarkup = InlineKeyboardMarkup(build_menu(buttons, n_cols=scene["n_cols"]))
     query.message.edit_text(scene["message"], reply_markup=replyMarkup)
