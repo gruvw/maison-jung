@@ -84,7 +84,7 @@ def start(update, context):
 def menu(update, context, user):
     oldMenuId = user.getMenuMessageId()
     if oldMenuId:
-        user.selection.clear()
+        context.user_data["selection"] = []
         context.bot.delete_message(user.chatId, oldMenuId)
     replyMarkup = InlineKeyboardMarkup(build_menu(menus["main"]["buttons"], n_cols=2))
     message = context.bot.send_message(user.chatId, menus["main"]["message"], reply_markup=replyMarkup)
@@ -99,22 +99,22 @@ def callback(update, context, user):
     query = update.callback_query
     data = query.data
     query.answer()
-    user.selection.append(data)
+    context.user_data["selection"].append(data)
     if data == "home":
         scene = menus["main"]
-        user.selection.clear()
-    if len(user.selection) == 1:
+        context.user_data["selection"].clear()
+    if len(context.user_data["selection"]) == 1:
         scene = menus[data+"Select"]
-    elif len(user.selection) == 2:
-        scene = menus[user.selection[0]+"Action"]
-    elif len(user.selection) == 3:
+    elif len(context.user_data["selection"]) == 2:
+        scene = menus[context.user_data["selection"][0]+"Action"]
+    elif len(context.user_data["selection"]) == 3:
         scene = menus["main"]
         context.bot.send_chat_action(user.chatId, telegram.ChatAction.TYPING)
         # ACTION
-        context.bot.send_message(user.chatId, user.selection)
-        user.selection.clear()
+        context.bot.send_message(user.chatId, context.user_data["selection"])
+        context.user_data["selection"].clear()
     buttons = scene["buttons"]
-    if user.selection:
+    if context.user_data["selection"]:
         buttons = [*buttons, InlineKeyboardButton("< Home", callback_data="home")]
     replyMarkup = InlineKeyboardMarkup(build_menu(buttons, n_cols=scene["n_cols"]))
     query.message.edit_text(scene["message"], reply_markup=replyMarkup)
