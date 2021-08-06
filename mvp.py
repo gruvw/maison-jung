@@ -1,23 +1,26 @@
 import yaml
 from functools import wraps
 import telegram
-from telegram import ChatAction, InlineKeyboardButton, KeyboardButton, InlineKeyboardMarkup
+from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, commandhandler
+import database as db
 
-
-############
-# Telegram #
-############
 
 # Load config file
 with open("config.yml", 'r') as stream:
     config = yaml.safe_load(stream)
 
+############
+# Telegram #
+############
+
 # Telegram bot initialization
 updater = Updater(token=config['telegram']['bot']['token'])
 dispatcher = updater.dispatcher
 
+
 # Decorators and utilities
+isAdminMenu = lambda data: "admin" in data
 
 def commandHandler(func):
     """Registers a function as a command handler."""
@@ -25,90 +28,95 @@ def commandHandler(func):
     dispatcher.add_handler(handler)
     return func
 
+
 def callbackHandler(func):
     """Registers a function as a command handler."""
     handler = CallbackQueryHandler(func)
     dispatcher.add_handler(handler)
     return func
 
-def restricted(func):
-    """Restricts handler usage to authorized users (present in config)."""
+
+def noBot(func):
+    """Prohibits access to robots."""
     @wraps(func)
     def wrapped(update, context, *args, **kwargs):
-        userId = update.effective_user.id
-        authorizedUsersId = [config['telegram']['users'][user]['chatId'] for user in config['telegram']['users']]
-        if userId not in authorizedUsersId:
-            print(f"Unauthorized access denied for {userId}.")
+        user = update.effective_user
+        if user.is_bot:
             return
         return func(update, context, *args, **kwargs)
     return wrapped
 
 
-def sendAction(action):
-    """Sends action while processing func command."""
-    def decorator(func):
-        @wraps(func)
-        def command_func(update, context, *args, **kwargs):
-            context.bot.send_chat_action(
-                chat_id=update.effective_message.chat_id, action=action)
-            return func(update, context,  *args, **kwargs)
-        return command_func
-    return decorator
-
-
-def getNewUsers():
-    """ Prints new telegram bot users and chat ids. """
-    bot = telegram.Bot(token=config['telegram']['bot']['token'])
-    updates = bot.get_updates()
-    if updates:
-        for update in updates:
-            print(f"{update['message']['chat']['first_name']}: {update['message']['chat']['id']}")
-    else:
-        print("No new user, please send a message to the bot.")
+def restrictedToAuthorizedUsers(func):
+    """Restricts handler usage to authorized users."""
+    @wraps(func)
+    def wrapped(update, context):
+        user = db.User(update)
+        if not user.isAuthorized():
+            context.bot.send_message(user.chatId, "Your account is not authorized!")
+            return
+        return func(update, context, user)
+    return wrapped
 
 
 def build_menu(buttons, n_cols):
     menu = [buttons[i:i + n_cols] for i in range(0, len(buttons), n_cols)]
     return menu
 
+
 # Handlers
 
 @commandHandler
-@restricted
-# @sendAction(telegram.ChatAction.TYPING)
+@noBot
 def start(update, context):
-    context.bot.send_message(update.effective_chat.id, "Bienvenu dans la famille JUNG!")
+    user = update.effective_user
+    chat = update.effective_chat
+    if user.id in db.getAuthorizedUsersId():
+        context.bot.send_message(chat.id, "Your accont is authorized, bienvenue dans la famille JUNG!")
+    else:
+        context.bot.send_message(chat.id, "Your account is not authorized yet! An authorization request has been sent to administrators.")
+        db.createUser(user.id, chat.id, user.name)
+
 
 @commandHandler
-@restricted
-def menu(update, context):
+@noBot
+@restrictedToAuthorizedUsers
+def menu(update, context, user):
+    oldMenuId = user.getMenuMessageId()
+    if oldMenuId:
+        user.selection.clear()
+        context.bot.delete_message(user.chatId, oldMenuId)
     replyMarkup = InlineKeyboardMarkup(build_menu(menus["main"]["buttons"], n_cols=2))
-    context.bot.send_message(update.effective_chat.id, menus["main"]["message"], reply_markup=replyMarkup)
+    message = context.bot.send_message(user.chatId, menus["main"]["message"], reply_markup=replyMarkup)
+    user.setMenuMessageId(message.message_id)
+
 
 @callbackHandler
-@restricted
-def callback(update, context):
+@noBot
+@restrictedToAuthorizedUsers
+def callback(update, context, user):
+    # TODO current state display: lampes, arrosage, parametres
     query = update.callback_query
     data = query.data
-    chatId = update.effective_chat.id
     query.answer()
-    selection[chatId].append(data)
+    user.selection.append(data)
     if data == "home":
         scene = menus["main"]
-        selection[chatId].clear()
-    if len(selection[chatId]) == 1:
+        user.selection.clear()
+    if len(user.selection) == 1:
         scene = menus[data+"Select"]
-    elif len(selection[chatId]) == 2:
-        scene = menus[selection[chatId][0]+"Action"]
-    elif len(selection[chatId]) == 3:
+    elif len(user.selection) == 2:
+        scene = menus[user.selection[0]+"Action"]
+    elif len(user.selection) == 3:
         scene = menus["main"]
+        context.bot.send_chat_action(user.chatId, telegram.ChatAction.TYPING)
         # ACTION
-        context.bot.send_message(update.effective_chat.id, selection[chatId])
-        selection[chatId].clear()
+        context.bot.send_message(user.chatId, user.selection)
+        user.selection.clear()
     buttons = scene["buttons"]
-    if selection[chatId]:
+    if user.selection:
         buttons = [*buttons, InlineKeyboardButton("< Home", callback_data="home")]
-    replyMarkup = InlineKeyboardMarkup(build_menu(buttons, n_cols=2))
+    replyMarkup = InlineKeyboardMarkup(build_menu(buttons, n_cols=scene["n_cols"]))
     query.message.edit_text(scene["message"], reply_markup=replyMarkup)
 
 
@@ -117,11 +125,11 @@ def callback(update, context):
 ########
 
 def main():
-    # getNewUsers()
-    updater.start_polling(drop_pending_updates=True)
+    updater.start_polling()
     updater.idle()
 
 
+# TODO arrosageSelect, parametersAction, arrosageAction
 menus = {
     "main": {
         "message": "Choisir le domaine:",
@@ -130,35 +138,48 @@ menus = {
             InlineKeyboardButton("Stores", callback_data="stores"),
             InlineKeyboardButton("Arrosage", callback_data="arrosage"),
             InlineKeyboardButton("Paramètres", callback_data="parameters")
-        ]
+        ],
+        "n_cols": 2
     },
     "lampesSelect": {
         "message": "Choisir la lampe:",
         "buttons": [
             InlineKeyboardButton(name.title(), callback_data=name)
-            for name in ["chargeur", "commode", "bureau", "canapé", "ficus"]
-        ]
+            for name in ["chargeur", "commode", "bureau", "canapé", "ficus", "télé", "Lampe 7", "lampe 8", "lampe 9"]
+        ],
+        "n_cols": 3
     },
     "storesSelect": {
         "message": "Choisir le store:",
         "buttons": [
             InlineKeyboardButton(name.title(), callback_data=name)
-            for name in ["Tous", "1", "2", "3", "4", "5"]
-        ]
+            for name in ["maison", "étage", "rez", "bureau", "séjour 1", "séjour 2", "séjour 3", "séjour 4", "séjour 5", "zoé", "lucas", "arthur", "parents"]
+        ],
+        "n_cols": 4
+    },
+    "arrosageSelect": {
+        "message": "Choisir la vanne:",
+        "buttons": [
+            InlineKeyboardButton(nb, callback_data=nb)
+            for nb in range(1, 49)
+        ],
+        "n_cols": 5
     },
     "parametersSelect": {
         "message": "Choisir le paramètre:",
         "buttons": [
             InlineKeyboardButton(name.title(), callback_data=name)
-            for name in config['telegram']['bot']['settings']
-        ]
+            for name in ["lampes", "stores", "arrosage"]
+        ],
+        "n_cols": 2
     },
     "lampesAction": {
         "message": "Que faire avec la lampe:",
         "buttons": [
             InlineKeyboardButton("Allumer", callback_data="on"),
             InlineKeyboardButton("Éteindre", callback_data="off")
-        ]
+        ],
+        "n_cols": 2
     },
     "storesAction": {
         "message": "Que faire avec le store:",
@@ -167,10 +188,18 @@ menus = {
             InlineKeyboardButton("Descendre", callback_data="down"),
             InlineKeyboardButton("Clac-clac", callback_data="clac"),
             InlineKeyboardButton("Stop", callback_data="stop")
-        ]
+        ],
+        "n_cols": 2
+    },
+    "arrosageAction": {
+        "message": "Que faire avec la vanne:",
+        "buttons": [
+            InlineKeyboardButton("Ouvrir", callback_data="open"),
+            InlineKeyboardButton("Fermer", callback_data="close")
+        ],
+        "n_cols": 2
     }
 }
-selection = {config['telegram']['users'][user]['chatId']:[] for user in config['telegram']['users']}
 
 if __name__ == "__main__":
     main()
