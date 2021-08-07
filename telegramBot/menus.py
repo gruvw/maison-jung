@@ -100,8 +100,8 @@ adminAddons = {
     "usersSelect": {
         "message": "Choisir l'utilisateur:",
         "buttons": [
-            InlineKeyboardButton(f"{name}: {userId}", callback_data=f"admin,{name}-{userId}")
-            for name, userId in db.getUsers()
+            InlineKeyboardButton(f"{user['name']}: {user['id']}", callback_data=f"admin,{user['name']}-{user['id']}")
+            for user in db.getUsers()
         ],
         "n_cols": 2
     },

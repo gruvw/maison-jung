@@ -12,34 +12,24 @@ USER = Query()
 ########
 
 class User:
-    def __init__(self, update):
-        self.id = update.effective_user.id
-        self.chatId = users.get(USER.id == self.id)["chatId"]
-        self.selection = users.get(USER.id == self.id)["menuSelection"]
+    def __init__(self, userId):
+        user = users.get(USER.id == userId)
+        if not user:
+            raise Exception(f"User {userId} does not exists in database!")
+        self.id = userId
+        self.menuSelection = user["menuSelection"]
 
-    def authorize(self):
-        users.update({"authorized": True}, USER.id == self.id)
-
-    def isAuthorized(self):
+    def __getitem__(self, key):
+        if key == "menuSelection":
+            return self.menuSelection
         user = users.get(USER.id == self.id)
-        return user["authorized"]
+        return user[key]
 
-    def grantAdmin(self):
-        users.update({"admin": True}, USER.id == self.id)
-
-    def isAdmin(self):
-        user = users.get(USER.id == self.id)
-        return user["admin"]
-
-    def setMenuMessageId(self, messageId):
-        users.update({"menuMessagesId": messageId}, USER.id == self.id)
-
-    def getMenuMessageId(self):
-        user = users.get(USER.id == self.id)
-        return user.get("menuMessagesId")
+    def __setitem__(self, key, value):
+        users.update({key: value}, USER.id == self.id)
 
     def saveSelection(self):
-        users.update({"menuSelection": self.selection}, USER.id == self.id)
+        self["menuSelection"] = self.menuSelection
 
     def delete(self):
         users.remove(USER.id == self.id)
@@ -59,12 +49,17 @@ def createUser(userId, chatId, name, authorized=False, admin=False):
                  USER.id == userId)
 
 
-def getAuthorizedUsersId():
-    authorizedUsers = users.search(USER.authorized == True)
-    return [user["id"] for user in authorizedUsers]
+def isAuthorized(userId):
+    user = users.search(USER.id == userId)
+    if user:
+        return user["authorized"]
 
 
 def getUsers():
     userTable = users.all()
-    result = [(user["name"], user["id"]) for user in userTable]
-    return result
+    return [User(user["id"]) for user in userTable]
+
+
+def getAdminUsers():
+    adminUsers = users.search(USER.admin == True)
+    return [User(adminUser["id"]) for adminUser in adminUsers]
