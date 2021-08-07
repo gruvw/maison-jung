@@ -1,6 +1,6 @@
-from telegram import InlineKeyboardButton
 from copy import deepcopy
-import database as db
+from telegram import InlineKeyboardButton
+import telegramBot.database as db
 
 
 #########
@@ -21,13 +21,13 @@ mainMenus = {
     "lampesSelect": {
         "message": "Choisir la lampe:",
         "buttons": [
-            InlineKeyboardButton(name.title(), callback_data=name)
-            for name in ["chargeur", "commode", "bureau", "canapé", "ficus", "télé", "Lampe 7", "lampe 8", "lampe 9"]
+            InlineKeyboardButton(lampe.title(), callback_data=lampe)
+            for lampe in ["chargeur", "commode", "bureau", "canapé", "ficus", "télé", "Lampe 7", "lampe 8", "lampe 9"]
         ],
         "n_cols": 3
     },
     "lampesAction": {
-        "message": "Que faire avec la lampe:",
+        "message": "Que faire avec la lampe > {0}:",
         "buttons": [
             InlineKeyboardButton("Allumer", callback_data="on"),
             InlineKeyboardButton("Éteindre", callback_data="off")
@@ -37,13 +37,13 @@ mainMenus = {
     "storesSelect": {
         "message": "Choisir le store:",
         "buttons": [
-            InlineKeyboardButton(name.title(), callback_data=name)
-            for name in ["maison", "étage", "rez", "bureau", "séjour 1", "séjour 2", "séjour 3", "séjour 4", "séjour 5", "zoé", "lucas", "arthur", "parents"]
+            InlineKeyboardButton(store.title(), callback_data=store)
+            for store in ["maison", "étage", "rez", "bureau", "séjour 1", "séjour 2", "séjour 3", "séjour 4", "séjour 5", "zoé", "lucas", "arthur", "parents"]
         ],
         "n_cols": 4
     },
     "storesAction": {
-        "message": "Que faire avec le store:",
+        "message": "Que faire avec le store > {0}:",
         "buttons": [
             InlineKeyboardButton("Monter", callback_data="up"),
             InlineKeyboardButton("Descendre", callback_data="down"),
@@ -55,13 +55,13 @@ mainMenus = {
     "arrosageSelect": {
         "message": "Choisir la vanne:",
         "buttons": [
-            InlineKeyboardButton(nb, callback_data=nb)
-            for nb in range(1, 49)
+            InlineKeyboardButton(vanne, callback_data=vanne)
+            for vanne in range(1, 49)
         ],
         "n_cols": 5
     },
     "arrosageAction": {
-        "message": "Que faire avec la vanne:",
+        "message": "Que faire avec la vanne > {0}:",
         "buttons": [
             InlineKeyboardButton("Ouvrir", callback_data="open"),
             InlineKeyboardButton("Fermer", callback_data="close")
@@ -71,13 +71,13 @@ mainMenus = {
     "parametersSelect": {
         "message": "Choisir le paramètre:",
         "buttons": [
-            InlineKeyboardButton(name.title(), callback_data=name)
-            for name in ["lampes", "stores", "arrosage"]
+            InlineKeyboardButton(param.title(), callback_data=param)
+            for param in ["lampes", "stores", "arrosage"]
         ],
         "n_cols": 2
     },
     "parametersAction": {
-        "message": "Changer les notifications:",
+        "message": "Changer les notifications > {0}:",
         "buttons": [
             InlineKeyboardButton("Notifications", callback_data="notifications"),
             InlineKeyboardButton("Scheduler", callback_data="scheduler"),
@@ -100,13 +100,13 @@ adminAddons = {
     "usersSelect": {
         "message": "Choisir l'utilisateur:",
         "buttons": [
-            InlineKeyboardButton(f"{name}: {userId}", callback_data=f"admin,{userId}")
+            InlineKeyboardButton(f"{name}: {userId}", callback_data=f"admin,{name}-{userId}")
             for name, userId in db.getUsers()
         ],
         "n_cols": 2
     },
     "usersAction": {
-        "message": "Modifier les permissions:",
+        "message": "Modifier les permissions de > {0}:",
         "buttons": [
             InlineKeyboardButton("Authorize", callback_data="admin,authorize"),
             InlineKeyboardButton("Admin", callback_data="admin,admin"),

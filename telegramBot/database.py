@@ -22,16 +22,14 @@ class User:
 
     def isAuthorized(self):
         user = users.get(USER.id == self.id)
-        if user:
-            return user["authorized"]
+        return user["authorized"]
 
     def grantAdmin(self):
         users.update({"admin": True}, USER.id == self.id)
 
     def isAdmin(self):
         user = users.get(USER.id == self.id)
-        if user:
-            return user["admin"]
+        return user["admin"]
 
     def setMenuMessageId(self, messageId):
         users.update({"menuMessagesId": messageId}, USER.id == self.id)
@@ -40,7 +38,7 @@ class User:
         user = users.get(USER.id == self.id)
         return user.get("menuMessagesId")
 
-    def updateSelection(self):
+    def saveSelection(self):
         users.update({"menuSelection": self.selection}, USER.id == self.id)
 
     def delete(self):
