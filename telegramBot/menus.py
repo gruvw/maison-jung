@@ -87,32 +87,37 @@ mainMenus = {
     }
 }
 
-adminMenus = deepcopy(mainMenus)
-adminMenus["main"]["buttons"].append(InlineKeyboardButton("Admin", callback_data="admin"))
-adminAddons = {
-    "adminSelect": {
-        "message": "Zone d'administration:",
-        "buttons": [
-            InlineKeyboardButton("Users", callback_data="admin,users")
-        ],
-        "n_cols": 1
-    },
-    "usersSelect": {
-        "message": "Choisir l'utilisateur:",
-        "buttons": [
-            InlineKeyboardButton(f"{user['name']}: {user['id']}", callback_data=f"admin,{user['name']}-{user['id']}")
-            for user in db.getUsers()
-        ],
-        "n_cols": 2
-    },
-    "usersAction": {
-        "message": "Modifier les permissions de > {0}:",
-        "buttons": [
-            InlineKeyboardButton("Authorize", callback_data="admin,authorize"),
-            InlineKeyboardButton("Admin", callback_data="admin,admin"),
-            InlineKeyboardButton("Delete", callback_data="admin,delete")
-        ],
-        "n_cols": 2
-    },
-}
-adminMenus = adminMenus | adminAddons
+
+def getAdminMenus():
+    # In a function because needs refresh from DB
+    adminMenus = deepcopy(mainMenus)
+    adminMenus["main"]["buttons"].append(InlineKeyboardButton("Admin", callback_data="admin"))
+    adminAddons = {
+        "adminSelect": {
+            "message": "Zone d'administration:",
+            "buttons": [
+                InlineKeyboardButton("Users", callback_data="admin,users")
+            ],
+            "n_cols": 1
+        },
+        "usersSelect": {
+            "message": "Choisir l'utilisateur:",
+            "buttons": [
+                InlineKeyboardButton(f"{user['name']} ({user['id']})", callback_data=f"admin,{user['name']}-{user['id']}")
+                for user in db.getUsers()
+            ],
+            "n_cols": 2
+        },
+        "usersAction": {
+            "message": "Modifier les permissions de > {0}:",
+            "buttons": [
+                InlineKeyboardButton("Authorize", callback_data="admin,authorize"),
+                InlineKeyboardButton("Admin", callback_data="admin,admin"),
+                InlineKeyboardButton("Delete", callback_data="admin,delete")
+            ],
+            "n_cols": 2
+        },
+    }
+    adminMenus = adminMenus | adminAddons
+    # print("GET MENU", db.getUsers())
+    return adminMenus

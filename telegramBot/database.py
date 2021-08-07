@@ -6,6 +6,11 @@ db = TinyDB('telegramBot/database.json')
 users = db.table('users')
 USER = Query()
 
+# Exceptions
+class UserNotFound(Exception):
+    """Raised if userId does not existes in DB."""
+    pass
+
 
 ########
 # User #
@@ -15,9 +20,12 @@ class User:
     def __init__(self, userId):
         user = users.get(USER.id == userId)
         if not user:
-            raise Exception(f"User {userId} does not exists in database!")
+            raise UserNotFound(f"User id {userId} does not exists in database!")
         self.id = userId
         self.menuSelection = user["menuSelection"]
+
+    def __repr__(self):
+        return f"{self['name']} ({self['id']})"
 
     def __getitem__(self, key):
         if key == "menuSelection":
