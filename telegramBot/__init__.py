@@ -3,6 +3,7 @@ from functools import wraps
 import telegram
 from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, commandhandler
+from menus import mainMenus, adminMenus
 import database as db
 
 
@@ -25,19 +26,22 @@ patterns = {
     "adminMenu": lambda data: "admin" in data,
 }
 
+
 def commandHandler(func):
     """Registers a function as a command handler."""
     handler = CommandHandler(func.__name__, func)
     dispatcher.add_handler(handler)
     return func
 
+
 def callbackHandler(pattern=None):
+    """Registers a function as a command handler."""
     def decorator(func):
-        """Registers a function as a command handler."""
         handler = CallbackQueryHandler(func, pattern=pattern)
         dispatcher.add_handler(handler)
         return func
     return decorator
+
 
 def noBot(func):
     """Prohibits access to robots."""
@@ -56,7 +60,20 @@ def restrictedToAuthorizedUsers(func):
     def wrapped(update, context):
         user = db.User(update)
         if not user.isAuthorized():
+            update.callback_query.answer()
             context.bot.send_message(user.chatId, "Your account is not authorized!")
+            return
+        return func(update, context, user)
+    return wrapped
+
+def restrictedToAdminUsers(func):
+    """Restricts handler usage to admin users."""
+    @wraps(func)
+    def wrapped(update, context):
+        user = db.User(update)
+        if not user.isAdmin():
+            update.callback_query.answer()
+            context.bot.send_message(user.chatId, "Your account is not admin!")
             return
         return func(update, context, user)
     return wrapped
@@ -76,8 +93,10 @@ def start(update, context):
     chat = update.effective_chat
     if user.id in db.getAuthorizedUsersId():
         context.bot.send_message(chat.id, "Your accont is authorized, bienvenue dans la famille JUNG!")
+        menu(update, context)
     else:
-        context.bot.send_message(chat.id, "Your account is not authorized yet! An authorization request has been sent to administrators.")
+        context.bot.send_message(
+            chat.id, "Your account is not authorized yet! An authorization request has been sent to administrators.")
         db.createUser(user.id, chat.id, user.name)
 
 
@@ -87,10 +106,15 @@ def start(update, context):
 def menu(update, context, user):
     oldMenuId = user.getMenuMessageId()
     if oldMenuId:
-        user.selection = []
-        context.bot.delete_message(user.chatId, oldMenuId)
-    replyMarkup = InlineKeyboardMarkup(build_menu(menus["main"]["buttons"], n_cols=2))
-    message = context.bot.send_message(user.chatId, menus["main"]["message"], reply_markup=replyMarkup)
+        user.selection.clear()
+        user.updateSelection()
+        try:
+            context.bot.delete_message(user.chatId, oldMenuId)
+        except telegram.error.BadRequest:
+            pass
+    menu = adminMenus if user.isAdmin() else mainMenus
+    replyMarkup = InlineKeyboardMarkup(build_menu(menu["main"]["buttons"], n_cols=2))
+    message = context.bot.send_message(user.chatId, mainMenus["main"]["message"], reply_markup=replyMarkup)
     user.setMenuMessageId(message.message_id)
 
 
@@ -103,19 +127,47 @@ def callback(update, context, user):
     data = query.data
     query.answer()
     user.selection.append(data)
+    user.updateSelection()
     if data == "home":
-        scene = menus["main"]
-        user.selection.clear()
-    if len(user.selection) == 1:
-        scene = menus[data+"Select"]
+        menu(update, context)
+        return
+    elif len(user.selection) == 1:
+        scene = mainMenus[data+"Select"]
     elif len(user.selection) == 2:
-        scene = menus[user.selection[0]+"Action"]
+        scene = mainMenus[user.selection[-2]+"Action"]
     elif len(user.selection) == 3:
-        scene = menus["main"]
         context.bot.send_chat_action(user.chatId, telegram.ChatAction.TYPING)
-        # ACTION
+        # TODO ACTION
         context.bot.send_message(user.chatId, user.selection)
-        user.selection.clear()
+        menu(update, context)
+        return
+    buttons = scene["buttons"]
+    if user.selection:
+        buttons = [*buttons, InlineKeyboardButton("< Home", callback_data="home")]
+    replyMarkup = InlineKeyboardMarkup(build_menu(buttons, n_cols=scene["n_cols"]))
+    query.message.edit_text(scene["message"], reply_markup=replyMarkup)
+
+
+@callbackHandler(patterns["adminMenu"])
+@noBot
+@restrictedToAdminUsers
+def callback(update, context, user):
+    # TODO current state display: user perm
+    query = update.callback_query
+    data = query.data.split(',')[-1]
+    query.answer()
+    user.selection.append(data)
+    user.updateSelection()
+    if len(user.selection) in [1,2]:
+        scene = adminMenus[data+"Select"]
+    elif len(user.selection) == 3:
+        scene = adminMenus[user.selection[-2]+"Action"]
+    elif len(user.selection) == 4:
+        context.bot.send_chat_action(user.chatId, telegram.ChatAction.TYPING)
+        # TODO ACTION
+        context.bot.send_message(user.chatId, user.selection[1:])
+        menu(update, context)
+        return
     buttons = scene["buttons"]
     if user.selection:
         buttons = [*buttons, InlineKeyboardButton("< Home", callback_data="home")]
@@ -131,78 +183,6 @@ def main():
     updater.start_polling()
     updater.idle()
 
-
-# TODO arrosageSelect, parametersAction, arrosageAction
-menus = {
-    "main": {
-        "message": "Choisir le domaine:",
-        "buttons": [
-            InlineKeyboardButton("Lampes", callback_data="lampes"),
-            InlineKeyboardButton("Stores", callback_data="stores"),
-            InlineKeyboardButton("Arrosage", callback_data="arrosage"),
-            InlineKeyboardButton("Paramètres", callback_data="parameters")
-        ],
-        "n_cols": 2
-    },
-    "lampesSelect": {
-        "message": "Choisir la lampe:",
-        "buttons": [
-            InlineKeyboardButton(name.title(), callback_data=name)
-            for name in ["chargeur", "commode", "bureau", "canapé", "ficus", "télé", "Lampe 7", "lampe 8", "lampe 9"]
-        ],
-        "n_cols": 3
-    },
-    "storesSelect": {
-        "message": "Choisir le store:",
-        "buttons": [
-            InlineKeyboardButton(name.title(), callback_data=name)
-            for name in ["maison", "étage", "rez", "bureau", "séjour 1", "séjour 2", "séjour 3", "séjour 4", "séjour 5", "zoé", "lucas", "arthur", "parents"]
-        ],
-        "n_cols": 4
-    },
-    "arrosageSelect": {
-        "message": "Choisir la vanne:",
-        "buttons": [
-            InlineKeyboardButton(nb, callback_data=nb)
-            for nb in range(1, 49)
-        ],
-        "n_cols": 5
-    },
-    "parametersSelect": {
-        "message": "Choisir le paramètre:",
-        "buttons": [
-            InlineKeyboardButton(name.title(), callback_data=name)
-            for name in ["lampes", "stores", "arrosage"]
-        ],
-        "n_cols": 2
-    },
-    "lampesAction": {
-        "message": "Que faire avec la lampe:",
-        "buttons": [
-            InlineKeyboardButton("Allumer", callback_data="on"),
-            InlineKeyboardButton("Éteindre", callback_data="off")
-        ],
-        "n_cols": 2
-    },
-    "storesAction": {
-        "message": "Que faire avec le store:",
-        "buttons": [
-            InlineKeyboardButton("Monter", callback_data="up"),
-            InlineKeyboardButton("Descendre", callback_data="down"),
-            InlineKeyboardButton("Clac-clac", callback_data="clac"),
-            InlineKeyboardButton("Stop", callback_data="stop")
-        ],
-        "n_cols": 2
-    },
-    "arrosageAction": {
-        "message": "Que faire avec la vanne:",
-        "buttons": [
-            InlineKeyboardButton("Ouvrir", callback_data="open"),
-            InlineKeyboardButton("Fermer", callback_data="close")
-        ],
-        "n_cols": 2
-    }
-}
 
 if __name__ == "__main__":
     main()
