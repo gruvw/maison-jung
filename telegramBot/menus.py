@@ -28,7 +28,7 @@ mainMenus = {
         "message": "Choisir la lampe:",
         "buttons": [
             InlineKeyboardButton(lampe.title(), callback_data=lampe)
-            for lampe in options["lampes"]["names"]
+            for lampe in options['lampes']['names']
         ],
         "n_cols": 3
     },
@@ -36,7 +36,7 @@ mainMenus = {
         "message": "Que faire avec la lampe > {0}:",
         "buttons": [
             InlineKeyboardButton(action.title(), callback_data=data)
-            for action, data in options["lampes"]["actions"].items()
+            for action, data in options['lampes']['actions'].items()
         ],
         "n_cols": 2
     },
@@ -44,7 +44,7 @@ mainMenus = {
         "message": "Choisir le store:",
         "buttons": [
             InlineKeyboardButton(store.title(), callback_data=store)
-            for store in options["stores"]["names"]
+            for store in options['stores']['names']
         ],
         "n_cols": 4
     },
@@ -52,7 +52,7 @@ mainMenus = {
         "message": "Que faire avec le store > {0}:",
         "buttons": [
             InlineKeyboardButton(action, callback_data=data)
-            for action, data in options["stores"]["actions"].items()
+            for action, data in options['stores']['actions'].items()
         ],
         "n_cols": 2
     },
@@ -60,7 +60,7 @@ mainMenus = {
         "message": "Choisir la vanne:",
         "buttons": [
             InlineKeyboardButton(vanne, callback_data=vanne)
-            for vanne in options["arrosage"]["names"]
+            for vanne in options['arrosage']['names']
         ],
         "n_cols": 5
     },
@@ -68,7 +68,7 @@ mainMenus = {
         "message": "Que faire avec la vanne > {0}:",
         "buttons": [
             InlineKeyboardButton(action, callback_data=data)
-            for action, data in options["arrosage"]["actions"].items()
+            for action, data in options['arrosage']['actions'].items()
         ],
         "n_cols": 2
     },
@@ -76,7 +76,7 @@ mainMenus = {
         "message": "Choisir le paramètre:",
         "buttons": [
             InlineKeyboardButton(param.title(), callback_data=param)
-            for param in ["lampes", "stores", "arrosage"]
+            for param in ['lampes", "stores", "arrosage']
         ],
         "n_cols": 2
     },
@@ -95,7 +95,7 @@ mainMenus = {
 def getAdminMenus():
     # In a function because needs refresh from DB
     adminMenus = deepcopy(mainMenus)
-    adminMenus["main"]["buttons"].append(InlineKeyboardButton("Admin", callback_data="admin"))
+    adminMenus['main']['buttons'].append(InlineKeyboardButton("Admin", callback_data="admin"))
     adminAddons = {
         "adminSelect": {
             "message": "Zone d'administration:",

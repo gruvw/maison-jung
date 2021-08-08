@@ -59,7 +59,7 @@ def verify(func):
             return
         try:
             user = db.User(update.effective_user.id)
-            user["name"] = update.effective_user.name
+            user['name'] = update.effective_user.name
         except db.UserNotFound:
             pass
         return func(update, context, *args, **kwargs)
@@ -73,7 +73,7 @@ def restricted(permission):
         def wrapped(update, context, *args, **kwargs):
             user = db.User(update.effective_user.id)
             if not user[permission]:
-                context.bot.send_message(user["chatId"], "You don't have the required permission.")
+                context.bot.send_message(user['chatId'], "You don't have the required permission.")
                 return
             return func(update, context, user, *args, **kwargs)
         return wrapped
@@ -106,22 +106,22 @@ def start(update, context):
 @restricted("authorized")
 def menu(update, context, user):
     try:
-        oldMenuId = user["menuMessageId"]
-        user["menuSelection"].clear()
+        oldMenuId = user['menuMessageId']
+        user['menuSelection'].clear()
         try:
-            context.bot.delete_message(user["chatId"], oldMenuId)
+            context.bot.delete_message(user['chatId'], oldMenuId)
         except telegram.error.BadRequest:
             pass
     except KeyError:
         pass
-    menu = getAdminMenus() if user["admin"] else mainMenus
-    replyMarkup = InlineKeyboardMarkup(build_menu(menu["main"]["buttons"], n_cols=menu["main"]["n_cols"]))
-    message = context.bot.send_message(user["chatId"], menu["main"]["message"], reply_markup=replyMarkup)
-    user["menuMessageId"] = message.message_id
+    menu = getAdminMenus() if user['admin'] else mainMenus
+    replyMarkup = InlineKeyboardMarkup(build_menu(menu['main']['buttons'], n_cols=menu['main']['n_cols']))
+    message = context.bot.send_message(user['chatId'], menu['main']['message'], reply_markup=replyMarkup)
+    user['menuMessageId'] = message.message_id
     user.saveSelection()
 
 
-@callbackHandler(patterns["mainMenu"])
+@callbackHandler(patterns['mainMenu'])
 @verify
 @restricted("authorized")
 def authorizedCallback(update, context, user):
@@ -129,61 +129,61 @@ def authorizedCallback(update, context, user):
     query = update.callback_query
     data = query.data
     query.answer()
-    user["menuSelection"].append(data)
+    user['menuSelection'].append(data)
     if data == "home":
         menu(update, context)
         return
-    elif len(user["menuSelection"]) == 1:
+    elif len(user['menuSelection']) == 1:
         scene = mainMenus[data+"Select"]
-    elif len(user["menuSelection"]) == 2:
-        scene = mainMenus[user["menuSelection"][-2]+"Action"]
-    elif len(user["menuSelection"]) == 3:
+    elif len(user['menuSelection']) == 2:
+        scene = mainMenus[user['menuSelection'][-2]+"Action"]
+    elif len(user['menuSelection']) == 3:
         # Action
-        context.bot.send_chat_action(user["chatId"], telegram.ChatAction.TYPING)
+        context.bot.send_chat_action(user['chatId'], telegram.ChatAction.TYPING)
         telegramBot.actions.userAction(context.bot, user)
-        context.bot.send_message(user["chatId"], user["menuSelection"])
+        context.bot.send_message(user['chatId'], user['menuSelection'])
         menu(update, context)
         return
-    buttons = scene["buttons"]
-    if user["menuSelection"]:
+    buttons = scene['buttons']
+    if user['menuSelection']:
         buttons = [*deepcopy(buttons), InlineKeyboardButton("< Home", callback_data="home")]
-    message = scene["message"].format(user["menuSelection"][-1]) if len(user["menuSelection"]) == 2 else scene["message"]
-    replyMarkup = InlineKeyboardMarkup(build_menu(buttons, n_cols=scene["n_cols"]))
+    message = scene['message'].format(user['menuSelection'][-1]) if len(user['menuSelection']) == 2 else scene['message']
+    replyMarkup = InlineKeyboardMarkup(build_menu(buttons, n_cols=scene['n_cols']))
     query.message.edit_text(message, reply_markup=replyMarkup)
     user.saveSelection()
 
 
-@callbackHandler(patterns["adminMenu"])
+@callbackHandler(patterns['adminMenu'])
 @verify
 @restricted("admin")
 def adminCallback(update, context, adminUser):
     query = update.callback_query
     data = query.data.split(',')[-1]
     query.answer()
-    adminUser["menuSelection"].append(data)
-    if len(adminUser["menuSelection"]) in [1, 2]:
+    adminUser['menuSelection'].append(data)
+    if len(adminUser['menuSelection']) in [1, 2]:
         scene = getAdminMenus()[data+"Select"]
-    elif len(adminUser["menuSelection"]) == 3:
-        scene = getAdminMenus()[adminUser["menuSelection"][-2]+"Action"]
-    elif len(adminUser["menuSelection"]) == 4:
+    elif len(adminUser['menuSelection']) == 3:
+        scene = getAdminMenus()[adminUser['menuSelection'][-2]+"Action"]
+    elif len(adminUser['menuSelection']) == 4:
         # Action
-        context.bot.send_chat_action(adminUser["chatId"], telegram.ChatAction.TYPING)
+        context.bot.send_chat_action(adminUser['chatId'], telegram.ChatAction.TYPING)
         telegramBot.actions.adminAction(context.bot, adminUser)
         menu(update, context)
         return
-    buttons = scene["buttons"]
-    if adminUser["menuSelection"]:
+    buttons = scene['buttons']
+    if adminUser['menuSelection']:
         # Adds home button
         buttons = [*deepcopy(buttons), InlineKeyboardButton("< Home", callback_data="home")]
         # Modify buttons' data
-        if len(adminUser["menuSelection"]) == 3:
-            if adminUser["menuSelection"][-2] == "users":
-                involvedUserId = int(adminUser["menuSelection"][-1].split("-")[-1])  # data exemple: @user-name-1234
+        if len(adminUser['menuSelection']) == 3:
+            if adminUser['menuSelection'][-2] == "users":
+                involvedUserId = int(adminUser['menuSelection'][-1].split("-")[-1])  # data exemple: @user-name-1234
                 involvedUser = db.User(involvedUserId)
-                buttons[0].text = boolToIcon(involvedUser["authorized"]) + " " + buttons[0].text
-                buttons[1].text = boolToIcon(involvedUser["admin"]) + " " + buttons[1].text
-    message = scene["message"].format(adminUser["menuSelection"][-1]) if len(adminUser["menuSelection"]) == 3 else scene["message"]
-    replyMarkup = InlineKeyboardMarkup(build_menu(buttons, n_cols=scene["n_cols"]))
+                buttons[0].text = boolToIcon(involvedUser['authorized']) + " " + buttons[0].text
+                buttons[1].text = boolToIcon(involvedUser['admin']) + " " + buttons[1].text
+    message = scene['message'].format(adminUser['menuSelection'][-1]) if len(adminUser['menuSelection']) == 3 else scene['message']
+    replyMarkup = InlineKeyboardMarkup(build_menu(buttons, n_cols=scene['n_cols']))
     query.message.edit_text(message, reply_markup=replyMarkup)
     adminUser.saveSelection()
 

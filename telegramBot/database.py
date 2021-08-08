@@ -22,7 +22,7 @@ class User:
         if not user:
             raise UserNotFound(f"User id {userId} does not exists in database!")
         self.id = userId
-        self.menuSelection = user["menuSelection"]
+        self.menuSelection = user['menuSelection']
 
     def __repr__(self):
         return f"{self['name']} ({self['id']})"
@@ -37,7 +37,7 @@ class User:
         users.update({key: value}, USER.id == self.id)
 
     def saveSelection(self):
-        self["menuSelection"] = self.menuSelection
+        self['menuSelection'] = self.menuSelection
 
     def delete(self):
         users.remove(USER.id == self.id)
@@ -60,14 +60,14 @@ def createUser(userId, chatId, name, authorized=False, admin=False):
 def isAuthorized(userId):
     user = users.get(USER.id == userId)
     if user:
-        return user["authorized"]
+        return user['authorized']
 
 
 def getUsers():
     userTable = users.all()
-    return [User(user["id"]) for user in userTable]
+    return [User(user['id']) for user in userTable]
 
 
 def getAdminUsers():
     adminUsers = users.search(USER.admin == True)
-    return [User(adminUser["id"]) for adminUser in adminUsers]
+    return [User(adminUser['id']) for adminUser in adminUsers]
