@@ -147,3 +147,4 @@ cython_debug/
 config.yml
 database.json
 .vscode
+telegramBot/options.yml

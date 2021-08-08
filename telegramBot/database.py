@@ -58,7 +58,7 @@ def createUser(userId, chatId, name, authorized=False, admin=False):
 
 
 def isAuthorized(userId):
-    user = users.search(USER.id == userId)
+    user = users.get(USER.id == userId)
     if user:
         return user["authorized"]
 

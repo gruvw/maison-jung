@@ -3,10 +3,10 @@ import telegram
 from copy import deepcopy
 from functools import wraps
 from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, commandhandler
+from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
+import telegramBot.actions
 import telegramBot.database as db
 from telegramBot.menus import mainMenus, getAdminMenus
-from telegramBot.actions import action, adminAction
 
 
 # Load config file
@@ -93,7 +93,7 @@ def start(update, context):
     user = update.effective_user
     chat = update.effective_chat
     if db.isAuthorized(user.id):
-        context.bot.send_message(chat.id, "Your accont is authorized, bienvenue dans la famille JUNG!")
+        context.bot.send_message(chat.id, "Your accont is authorized, bienvenue dans la maison Jung!")
         menu(update, context)
     else:
         context.bot.send_message(
@@ -138,9 +138,9 @@ def authorizedCallback(update, context, user):
     elif len(user["menuSelection"]) == 2:
         scene = mainMenus[user["menuSelection"][-2]+"Action"]
     elif len(user["menuSelection"]) == 3:
-        # action
+        # Action
         context.bot.send_chat_action(user["chatId"], telegram.ChatAction.TYPING)
-        action(context.bot, user)
+        telegramBot.actions.userAction(context.bot, user)
         context.bot.send_message(user["chatId"], user["menuSelection"])
         menu(update, context)
         return
@@ -166,9 +166,9 @@ def adminCallback(update, context, adminUser):
     elif len(adminUser["menuSelection"]) == 3:
         scene = getAdminMenus()[adminUser["menuSelection"][-2]+"Action"]
     elif len(adminUser["menuSelection"]) == 4:
-        # action
+        # Action
         context.bot.send_chat_action(adminUser["chatId"], telegram.ChatAction.TYPING)
-        adminAction(context.bot, adminUser)
+        telegramBot.actions.adminAction(context.bot, adminUser)
         menu(update, context)
         return
     buttons = scene["buttons"]

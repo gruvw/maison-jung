@@ -1,6 +1,12 @@
+import yaml
 from copy import deepcopy
 from telegram import InlineKeyboardButton
 import telegramBot.database as db
+
+
+# Load options file
+with open("telegramBot/options.yml", 'r') as stream:
+    options = yaml.safe_load(stream)
 
 
 #########
@@ -22,15 +28,15 @@ mainMenus = {
         "message": "Choisir la lampe:",
         "buttons": [
             InlineKeyboardButton(lampe.title(), callback_data=lampe)
-            for lampe in ["chargeur", "commode", "bureau", "canapé", "ficus", "télé", "Lampe 7", "lampe 8", "lampe 9"]
+            for lampe in options["lampes"]["names"]
         ],
         "n_cols": 3
     },
     "lampesAction": {
         "message": "Que faire avec la lampe > {0}:",
         "buttons": [
-            InlineKeyboardButton("Allumer", callback_data="on"),
-            InlineKeyboardButton("Éteindre", callback_data="off")
+            InlineKeyboardButton(action.title(), callback_data=data)
+            for action, data in options["lampes"]["actions"].items()
         ],
         "n_cols": 2
     },
@@ -38,17 +44,15 @@ mainMenus = {
         "message": "Choisir le store:",
         "buttons": [
             InlineKeyboardButton(store.title(), callback_data=store)
-            for store in ["maison", "étage", "rez", "bureau", "séjour 1", "séjour 2", "séjour 3", "séjour 4", "séjour 5", "zoé", "lucas", "arthur", "parents"]
+            for store in options["stores"]["names"]
         ],
         "n_cols": 4
     },
     "storesAction": {
         "message": "Que faire avec le store > {0}:",
         "buttons": [
-            InlineKeyboardButton("Monter", callback_data="up"),
-            InlineKeyboardButton("Descendre", callback_data="down"),
-            InlineKeyboardButton("Clac-clac", callback_data="clac"),
-            InlineKeyboardButton("Stop", callback_data="stop")
+            InlineKeyboardButton(action, callback_data=data)
+            for action, data in options["stores"]["actions"].items()
         ],
         "n_cols": 2
     },
@@ -56,15 +60,15 @@ mainMenus = {
         "message": "Choisir la vanne:",
         "buttons": [
             InlineKeyboardButton(vanne, callback_data=vanne)
-            for vanne in range(1, 49)
+            for vanne in options["arrosage"]["names"]
         ],
         "n_cols": 5
     },
     "arrosageAction": {
         "message": "Que faire avec la vanne > {0}:",
         "buttons": [
-            InlineKeyboardButton("Ouvrir", callback_data="open"),
-            InlineKeyboardButton("Fermer", callback_data="close")
+            InlineKeyboardButton(action, callback_data=data)
+            for action, data in options["arrosage"]["actions"].items()
         ],
         "n_cols": 2
     },
@@ -119,5 +123,4 @@ def getAdminMenus():
         },
     }
     adminMenus = adminMenus | adminAddons
-    # print("GET MENU", db.getUsers())
     return adminMenus
