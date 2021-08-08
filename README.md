@@ -9,3 +9,4 @@ The following files are ignored by git for security & privacy reasons:
 - `config.yml`
 - `telegramBot/options.yml`
 - `telegramBot/database.json`
+- `logs/**`

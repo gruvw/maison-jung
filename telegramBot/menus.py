@@ -57,7 +57,7 @@ mainMenus = {
     "arrosageSelect": {
         "message": "Choisir la vanne:",
         "buttons": [
-            InlineKeyboardButton(vanne, callback_data=vanne)
+            InlineKeyboardButton(str(vanne), callback_data=vanne)
             for vanne in options['arrosage']['vannes']['names']
         ],
         "n_cols": 5
@@ -73,7 +73,7 @@ mainMenus = {
     "settingsSelect": {
         "message": "Choisir le paramètre:",
         "buttons": [
-            InlineKeyboardButton("🔔 " + param.title(), callback_data=param)
+            InlineKeyboardButton(param.title(), callback_data=param)
             for param in ["lampes", "stores", "arrosage"]
         ],
         "n_cols": 2

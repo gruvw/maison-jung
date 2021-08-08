@@ -6,6 +6,7 @@ from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
 import telegramBot.actions
 import telegramBot.database as db
 from telegramBot.menus import mainMenus, getAdminMenus
+from server import files
 from server.utils import loadYaml, boolToIcon
 
 
@@ -117,7 +118,7 @@ def menu(update, context, user):
 @callbackHandler(patterns['mainMenu'])
 @verify
 @restricted("authorized")
-def authorizedCallback(update, context, user):
+def userCallback(update, context, user):
     query = update.callback_query
     data = query.data
     query.answer()
@@ -129,7 +130,7 @@ def authorizedCallback(update, context, user):
     elif len(userMenuSelection) == 1:
         scene = mainMenus[data+"Select"]
     elif len(userMenuSelection) == 2:
-        scene = mainMenus[userMenuSelection[-2]+"Action"]
+        scene = mainMenus[userMenuSelection[0]+"Action"]
     elif len(userMenuSelection) == 3:
         # Action
         context.bot.send_chat_action(user['chatId'], telegram.ChatAction.TYPING)
@@ -141,15 +142,28 @@ def authorizedCallback(update, context, user):
         # Adds home button
         buttons = [*deepcopy(buttons), InlineKeyboardButton("< Home", callback_data="home")]
         # Modify buttons' data
-        # TODO lampes, arrosage
-        if len(userMenuSelection) == 2:
-            if userMenuSelection[-2] == "settings":
-                for button, setting in zip(buttons[:-1], user['settings'][userMenuSelection[-1]].values()):
+        if len(userMenuSelection) == 1:  # one button clicked
+            if userMenuSelection[0] == "lampes":
+                lampesState = files.getState("lampes")
+                for button, state in zip(buttons[:-1], lampesState):
+                    button.text += " " + boolToIcon(state, style="light")
+            elif userMenuSelection[0] == "arrosage":
+                arrosageState = files.getState("arrosage")
+                for button, state in zip(buttons[:-1], arrosageState):
+                    button.text += " " + boolToIcon(state, style="water")
+            elif userMenuSelection[0] == "settings":
+                userNotificationSettings = [any(user['settings'][setting].values()) for setting in user['settings']]
+                for button, setting in zip(buttons[:-1], userNotificationSettings):
+                    button.text += " " + boolToIcon(setting, style="notification")
+        elif len(userMenuSelection) == 2:  # two buttons clicked
+            if userMenuSelection[0] == "settings":
+                selectedUserSettings = user['settings'][userMenuSelection[1]].values()
+                for button, setting in zip(buttons[:-1], selectedUserSettings):
                     button.text += " " + boolToIcon(setting)
-    message = scene['message'].format(f"_{userMenuSelection[-1]}_") if len(userMenuSelection) == 2 else scene['message']
+    message = scene['message'].format(f"_{userMenuSelection[1]}_") if len(userMenuSelection) == 2 else scene['message']
     replyMarkup = InlineKeyboardMarkup(build_menu(buttons, n_cols=scene['n_cols']))
     query.message.edit_text(message, reply_markup=replyMarkup, parse_mode=telegram.ParseMode.MARKDOWN)
-    user['menuSelection'] = userMenuSelection   # in order to use __setitem__
+    user['menuSelection'] = userMenuSelection  # in order to use __setitem__
 
 
 @callbackHandler(patterns['adminMenu'])
@@ -164,7 +178,7 @@ def adminCallback(update, context, adminUser):
     if len(adminUserMenuSelection) in [1, 2]:
         scene = getAdminMenus()[data+"Select"]
     elif len(adminUserMenuSelection) == 3:
-        scene = getAdminMenus()[adminUserMenuSelection[-2]+"Action"]
+        scene = getAdminMenus()[adminUserMenuSelection[1]+"Action"]
     elif len(adminUserMenuSelection) == 4:
         # Action
         context.bot.send_chat_action(adminUser['chatId'], telegram.ChatAction.TYPING)
@@ -179,13 +193,13 @@ def adminCallback(update, context, adminUser):
         # Adds home button
         buttons = [*deepcopy(buttons), InlineKeyboardButton("< Home", callback_data="home")]
         # Modify buttons' data
-        if len(adminUserMenuSelection) == 3:
-            if adminUserMenuSelection[-2] == "users":
-                involvedUserId = int(adminUserMenuSelection[-1].split("-")[-1])  # data exemple: @user-name-1234
+        if len(adminUserMenuSelection) == 3:  # three buttons clicked
+            if adminUserMenuSelection[1] == "users":
+                involvedUserId = int(adminUserMenuSelection[2].split("-")[-1])  # data exemple: @user-name-1234
                 involvedUser = db.User(involvedUserId)
-                buttons[0].text = boolToIcon(involvedUser['authorized']) + " " + buttons[0].text
-                buttons[1].text = boolToIcon(involvedUser['admin']) + " " + buttons[1].text
-    message = scene['message'].format(f"_{adminUserMenuSelection[-1]}_") if len(adminUserMenuSelection) == 3 else scene['message']
+                buttons[0].text += " " + boolToIcon(involvedUser['authorized'])
+                buttons[1].text += " " + boolToIcon(involvedUser['admin'])
+    message = scene['message'].format(f"_{adminUserMenuSelection[2]}_") if len(adminUserMenuSelection) == 3 else scene['message']
     replyMarkup = InlineKeyboardMarkup(build_menu(buttons, n_cols=scene['n_cols']))
     query.message.edit_text(message, reply_markup=replyMarkup, parse_mode=telegram.ParseMode.MARKDOWN)
     adminUser['menuSelection'] = adminUserMenuSelection  # in order to use __setitem__

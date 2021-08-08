@@ -1,3 +1,3 @@
-from telegramBot import main
+import server
 
-main()
+server.main()
