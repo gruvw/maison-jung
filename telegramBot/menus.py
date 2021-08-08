@@ -1,12 +1,10 @@
-import yaml
 from copy import deepcopy
 from telegram import InlineKeyboardButton
 import telegramBot.database as db
+from server.utils import loadYaml
 
 
-# Load options file
-with open("telegramBot/options.yml", 'r') as stream:
-    options = yaml.safe_load(stream)
+options = loadYaml("options")
 
 
 #########
@@ -20,7 +18,7 @@ mainMenus = {
             InlineKeyboardButton("Lampes", callback_data="lampes"),
             InlineKeyboardButton("Stores", callback_data="stores"),
             InlineKeyboardButton("Arrosage", callback_data="arrosage"),
-            InlineKeyboardButton("Paramètres", callback_data="parameters")
+            InlineKeyboardButton("Paramètres", callback_data="settings")
         ],
         "n_cols": 2
     },
@@ -51,7 +49,7 @@ mainMenus = {
     "storesAction": {
         "message": "Que faire avec le store > {0}:",
         "buttons": [
-            InlineKeyboardButton(action, callback_data=data)
+            InlineKeyboardButton(action.title(), callback_data=data)
             for action, data in options['stores']['actions'].items()
         ],
         "n_cols": 2
@@ -60,32 +58,32 @@ mainMenus = {
         "message": "Choisir la vanne:",
         "buttons": [
             InlineKeyboardButton(vanne, callback_data=vanne)
-            for vanne in options['arrosage']['names']
+            for vanne in options['arrosage']['vannes']['names']
         ],
         "n_cols": 5
     },
     "arrosageAction": {
         "message": "Que faire avec la vanne > {0}:",
         "buttons": [
-            InlineKeyboardButton(action, callback_data=data)
-            for action, data in options['arrosage']['actions'].items()
+            InlineKeyboardButton(action.title(), callback_data=data)
+            for action, data in options['arrosage']['vannes']['actions'].items()
         ],
         "n_cols": 2
     },
-    "parametersSelect": {
+    "settingsSelect": {
         "message": "Choisir le paramètre:",
         "buttons": [
-            InlineKeyboardButton(param.title(), callback_data=param)
-            for param in ['lampes", "stores", "arrosage']
+            InlineKeyboardButton("🔔 " + param.title(), callback_data=param)
+            for param in ["lampes", "stores", "arrosage"]
         ],
         "n_cols": 2
     },
-    "parametersAction": {
+    "settingsAction": {
         "message": "Changer les notifications > {0}:",
         "buttons": [
-            InlineKeyboardButton("Notifications", callback_data="notifications"),
-            InlineKeyboardButton("Scheduler", callback_data="scheduler"),
-            InlineKeyboardButton("Errors", callback_data="errors"),
+            InlineKeyboardButton("🕑 Scheduler", callback_data="scheduler"),
+            InlineKeyboardButton("👍 Success", callback_data="success"),
+            InlineKeyboardButton("⚠️ Erreurs", callback_data="errors"),
         ],
         "n_cols": 2
     }
@@ -117,7 +115,7 @@ def getAdminMenus():
             "buttons": [
                 InlineKeyboardButton("Authorize", callback_data="admin,authorize"),
                 InlineKeyboardButton("Admin", callback_data="admin,admin"),
-                InlineKeyboardButton("Delete", callback_data="admin,delete")
+                InlineKeyboardButton("🗑️ Delete", callback_data="admin,delete")
             ],
             "n_cols": 2
         },

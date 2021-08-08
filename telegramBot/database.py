@@ -36,9 +36,6 @@ class User:
     def __setitem__(self, key, value):
         users.update({key: value}, USER.id == self.id)
 
-    def saveSelection(self):
-        self['menuSelection'] = self.menuSelection
-
     def delete(self):
         users.remove(USER.id == self.id)
 
@@ -53,7 +50,24 @@ def createUser(userId, chatId, name, authorized=False, admin=False):
                   "name": name,
                   "authorized": authorized,
                   "admin": admin,
-                  "menuSelection": []},
+                  "menuSelection": [],
+                  "settings": {
+                      "lampes": {
+                          "scheduler": False,
+                          "success": False,
+                          "errors": False
+                          },
+                      "stores": {
+                          "scheduler": False,
+                          "success": False,
+                          "errors": False
+                          },
+                      "arrosage": {
+                          "scheduler": False,
+                          "success": False,
+                          "errors": False
+                          }
+                  }},
                  USER.id == userId)
 
 
