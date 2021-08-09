@@ -6,7 +6,7 @@ This is the repository where I host the server programs that runs on the Raspber
 
 The following files are ignored by git for security & privacy reasons:
 
-- `config.yml`
+- `configs/*`
+- `logs/*`
+- `telegramBot/databases/*`
 - `telegramBot/options.yml`
-- `telegramBot/database.json`
-- `logs/**`

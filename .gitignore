@@ -144,8 +144,9 @@ cython_debug/
 
 # End of https://www.toptal.com/developers/gitignore/api/python
 
-config.yml
-database.json
 .vscode
-telegramBot/options.yml
 local
+logs
+configs
+telegramBot/databases
+telegramBot/options.yml

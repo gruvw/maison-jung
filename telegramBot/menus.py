@@ -120,5 +120,5 @@ def getAdminMenus():
             "n_cols": 2
         },
     }
-    adminMenus = adminMenus | adminAddons
+    adminMenus = {**adminMenus, **adminAddons}
     return adminMenus

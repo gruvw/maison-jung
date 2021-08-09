@@ -1,8 +1,13 @@
 from tinydb import TinyDB, Query
 from tinydb.operations import delete
+from server.utils import loadYaml
+
+
+config = loadYaml("config")
 
 # Initialize database
-db = TinyDB('telegramBot/database.json')
+path = 'telegramBot/databases/databaseLocal.json' if config['local'] else 'telegramBot/databases/databaseRPI.json'
+db = TinyDB(path)
 users = db.table('users')
 USER = Query()
 
@@ -85,3 +90,8 @@ def getUsers():
 def getAdminUsers():
     adminUsers = users.search(USER.admin == True)
     return [User(adminUser['id']) for adminUser in adminUsers]
+
+
+def getNotifiedUsers(category, group):
+    userTable = users.search(USER.settings[category][group] == True)
+    return [User(user['id']) for user in userTable]

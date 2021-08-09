@@ -3,11 +3,11 @@ from copy import deepcopy
 from functools import wraps
 from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
+from server import files
+from server.utils import loadYaml, boolToIcon
 import telegramBot.actions
 import telegramBot.database as db
 from telegramBot.menus import mainMenus, getAdminMenus
-from server import files
-from server.utils import loadYaml, boolToIcon
 
 
 config = loadYaml("config")
@@ -19,6 +19,7 @@ config = loadYaml("config")
 
 # Telegram bot initialization
 updater = Updater(token=config['telegram']['bot']['token'])
+bot = updater.bot
 dispatcher = updater.dispatcher
 
 
@@ -123,6 +124,8 @@ def userCallback(update, context, user):
     data = query.data
     query.answer()
     userMenuSelection = user['menuSelection']
+    if data in userMenuSelection:  # prevents double clicks on buttons
+        return
     userMenuSelection.append(data)
     if data == "home":
         menu(update, context)
@@ -145,10 +148,12 @@ def userCallback(update, context, user):
         if len(userMenuSelection) == 1:  # one button clicked
             if userMenuSelection[0] == "lampes":
                 lampesState = files.getState("lampes")
+                lampesState = [True if char == "A" else False for char in lampesState]
                 for button, state in zip(buttons[:-1], lampesState):
                     button.text += " " + boolToIcon(state, style="light")
             elif userMenuSelection[0] == "arrosage":
                 arrosageState = files.getState("arrosage")
+                arrosageState = [True if char == "A" else False for char in arrosageState]
                 for button, state in zip(buttons[:-1], arrosageState):
                     button.text += " " + boolToIcon(state, style="water")
             elif userMenuSelection[0] == "settings":
@@ -174,6 +179,8 @@ def adminCallback(update, context, adminUser):
     data = query.data.split(',')[-1]
     query.answer()
     adminUserMenuSelection = adminUser['menuSelection']
+    if data in adminUserMenuSelection:  # prevents double clicks on buttons
+        return
     adminUserMenuSelection.append(data)
     if len(adminUserMenuSelection) in [1, 2]:
         scene = getAdminMenus()[data+"Select"]

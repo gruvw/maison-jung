@@ -14,15 +14,18 @@ def userAction(bot, userAgent):
     if selection[0] == "lampes":
         data = list(config['adafruit']['feeds']['defaults']['lampes'])
         data[int(options['lampes']['names'][selection[1]])] = selection[2]
-        server.actions.lampes(''.join(data), "telegram")
+        if not server.actions.lampes(''.join(data), "telegram"):
+            bot.send_message(userAgent['chatId'], "⚠️ Une erreur est survenue.")
     elif selection[0] == "stores":
         data = options['stores']['names'][selection[1]]
         data = data.replace("_", selection[2])
-        server.actions.stores(data, "telegram")
+        if not server.actions.stores(data, "telegram"):
+            bot.send_message(userAgent['chatId'], "⚠️ Une erreur est survenue.")
     elif selection[0] == "arrosage":
         data = selection[1] + selection[2]
         data = data if len(data) == 3 else "0" + data
-        server.actions.arrosage(data, "telegram")
+        if not server.actions.arrosage(data, "telegram"):
+            bot.send_message(userAgent['chatId'], "⚠️ Une erreur est survenue.")
     elif selection[0] == "settings":
         # toggle setting state
         userAgentSettings = userAgent['settings']
@@ -30,7 +33,7 @@ def userAction(bot, userAgent):
         userAgentSettings[selection[1]][selection[2]] = newState
         userAgent['settings'] = userAgentSettings  # in order to use __setitem__
         bot.send_message(userAgent['chatId'],
-                         f"🔔 Les notifications _{selection[1]} -> {selection[2]}_ sont maintenant: {boolToIcon(newState)}", parse_mode=telegram.ParseMode.MARKDOWN)
+                         f"🔔 Les notifications _{selection[1]}_ -> _{selection[2]}_ sont maintenant: {boolToIcon(newState)}", parse_mode=telegram.ParseMode.MARKDOWN)
 
 
 def adminAction(bot, adminAgent):
@@ -77,6 +80,3 @@ def editUsers(bot, adminAgent, involvedUserId, action):
         bot.send_message(involvedUser['chatId'],
                          "⛔ Your account has been deleted. Use the `/start` command if you think that it was a mistake.", parse_mode=telegram.ParseMode.MARKDOWN)
         involvedUser.delete()
-
-
-# TODO def notifyUsers(message, category)
