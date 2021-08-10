@@ -1,6 +1,7 @@
 from tinydb import TinyDB, Query
 from tinydb.operations import delete
 from server.utils import loadYaml
+from server import pb  # import printbetter from __init__.py
 
 
 config = loadYaml("config")
@@ -42,6 +43,7 @@ class User:
         users.update({key: value}, USER.id == self.id)
 
     def delete(self):
+        pb.info(f"-> [database] Removed user {self}")
         users.remove(USER.id == self.id)
 
 
@@ -74,6 +76,7 @@ def createUser(userId, chatId, name, authorized=False, admin=False):
                           }
                   }},
                  USER.id == userId)
+    pb.info(f"-> [database] New user created {name} ({userId})")
 
 
 def isAuthorized(userId):

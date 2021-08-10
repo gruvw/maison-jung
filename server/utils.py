@@ -23,4 +23,6 @@ def boolToIcon(value, style="checkbox"):
         return "🔔" if value else "🔕"
     if style == "water":
         return "💧" if value else ""
+    if style == "clock":
+        return "🕑" if value else ""
 

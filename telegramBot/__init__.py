@@ -4,6 +4,7 @@ from functools import wraps
 from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
 from server import files
+from server import pb  # import printbetter from __init__.py
 from server.utils import loadYaml, boolToIcon
 import telegramBot.actions
 import telegramBot.database as db
@@ -89,6 +90,7 @@ def start(update, context):
     """/start handler"""
     user = update.effective_user
     chat = update.effective_chat
+    pb.info(f"<- [telegram] User id {user.id} executed /start")
     if db.isAuthorized(user.id):
         context.bot.send_message(chat.id, "Your accont is authorized, bienvenue dans la maison Jung!")
         menu(update, context)
@@ -103,6 +105,7 @@ def start(update, context):
 @restricted("authorized")
 def menu(update, context, user):
     """/menu handler"""
+    pb.info(f"<- [telegram] User {user} executed /menu")
     try:
         oldMenuId = user['menuMessageId']
         user['menuSelection'] = []  # in order to use __setitem__

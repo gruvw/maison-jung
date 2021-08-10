@@ -1,7 +1,7 @@
 import requests
 from server import pb  # import printbetter from __init__.py
 from server import files
-from server.utils import loadYaml
+from server.utils import boolToIcon, loadYaml
 import telegramBot.utils
 
 
@@ -9,10 +9,11 @@ config = loadYaml("config")
 
 maxRetry = 2  # nb of retries for wemos requests
 
-# TODO from scheduler + emoji, si erreur en scheduler, group: errors or scheduler?
-def lampes(data, source):
+
+def lampes(data, source, notify=True):
     """Takes actions (lampes) based on provided data. Returns if successful."""
-    pb.info(f"<- {source} | Lampes changed: {data}")  # data example: XXAXXXXXX
+    pb.info(f"<- [server] {source} | Lampes changed: {data}")  # data example: XXAXXXAXX
+    fromScheduler = source == "scheduler"
     state = list(files.getState("lampes"))
     successes = []
     for i in range(len(data)):
@@ -27,17 +28,20 @@ def lampes(data, source):
         successes.append(success)
         if success:  # request went well
             state[i] = action
-            telegramBot.utils.notifyUsers(f"👍 Lampes: _{lampeName}_ -> _{lampeAction}_ (from {source})", "lampes", "success")
+            if notify:
+                telegramBot.utils.notifyUsers(f"{boolToIcon(fromScheduler, 'clock')}👍 Lampes: _{lampeName}_ -> _{lampeAction}_{f' (from {source})' if not fromScheduler else ''}", "lampes", f"{'scheduler' if fromScheduler else 'success'}")
         else:  # cannot join wemos
             state[i] = "P"
-            telegramBot.utils.notifyUsers(f"⚠️ Lampes: _{lampeName}_ -> _{lampeAction}_ (from {source})", "lampes", "errors")
+            if notify:
+                telegramBot.utils.notifyUsers(f"{boolToIcon(fromScheduler, 'clock')}⚠️ Lampes: _{lampeName}_ -> _{lampeAction}_{f' (from {source})' if not fromScheduler else ''}", "lampes", f"{'scheduler' if fromScheduler else 'errors'}")
     files.setState("lampes", "".join(state))
     return all(successes)  # every requests went well
 
 
-def stores(data, source):
+def stores(data, source, notify=True):
     """Takes actions (stores) based on provided data. Returns if successful."""
-    pb.info(f"<- {source} | Stores changed: {data}")  # data example: 3A0ZXX
+    pb.info(f"<- [server] {source} | Stores changed: {data}")  # data example: 3A0ZXX
+    fromScheduler = source == "scheduler"
     storesActions = {"A": "open", "Z": "close", "C": "clac", "I": "incli", "S": "stop"}
     successes = []
     for i in range(3):
@@ -54,15 +58,18 @@ def stores(data, source):
         success = sendWemos(urlSelect) and sendWemos(urlAction)  # sends both requests
         successes.append(success)
         if success:  # request went well
-            telegramBot.utils.notifyUsers(f"👍 Stores: _{storeName} {'tous' if storeNb == 0 else storeNb}_ -> _{storeAction}_ (from {source})", "stores", "success")
+            if notify:
+                telegramBot.utils.notifyUsers(f"{boolToIcon(fromScheduler, 'clock')}👍 Stores: _{storeName} {'tous' if storeNb == 0 else storeNb}_ -> _{storeAction}_{f' (from {source})' if not fromScheduler else ''}", "stores", f"{'scheduler' if fromScheduler else 'success'}")
         else:  # cannot join wemos
-            telegramBot.utils.notifyUsers(f"⚠️ Stores: _{storeName} {'tous' if storeNb == 0 else storeNb}_ -> _{storeAction}_ (from {source})", "stores", "errors")
+            if notify:
+                telegramBot.utils.notifyUsers(f"{boolToIcon(fromScheduler, 'clock')}⚠️ Stores: _{storeName} {'tous' if storeNb == 0 else storeNb}_ -> _{storeAction}_{f' (from {source})' if not fromScheduler else ''}", "stores", f"{'scheduler' if fromScheduler else 'errors'}")
     return all(successes)  # every requests went well
 
 
-def arrosage(data, source):
+def arrosage(data, source, notify=True):
     """Takes action (arrosage) based on provided data. Returns if successful."""
-    pb.info(f"<- {source} | Arrosage changed: {data}")  # data example: 04A
+    pb.info(f"<- [server] {source} | Arrosage changed: {data}")  # data example: 04A
+    fromScheduler = source == "scheduler"
     # Only one vanne at a time
     action = data[2]  # A, Z
     vanne = int(data[:2])
@@ -72,10 +79,12 @@ def arrosage(data, source):
     success = sendWemos(url)
     if success:  # request went well
         newState = [data[2] if i+1 == int(data[:2]) else "Z" for i in range(48)]
-        telegramBot.utils.notifyUsers(f"👍 Arrosage: _vanne {vanne}_ -> _{vanneAction}_ (from {source})", "arrosage", "success")
+        if notify:
+            telegramBot.utils.notifyUsers(f"{boolToIcon(fromScheduler, 'clock')}👍 Arrosage: _vanne {vanne}_ -> _{vanneAction}_{f' (from {source})' if not fromScheduler else ''}", "arrosage", f"{'scheduler' if fromScheduler else 'success'}")
     else:  # cannot join wemos
         newState = list("P"*48)
-        telegramBot.utils.notifyUsers(f"⚠️ Arrosage: _vanne {vanne}_ -> _{vanneAction}_ (from {source})", "arrosage", "errors")
+        if notify:
+            telegramBot.utils.notifyUsers(f"{boolToIcon(fromScheduler, 'clock')}⚠️ Arrosage: _vanne {vanne}_ -> _{vanneAction}_{f' (from {source})' if not fromScheduler else ''}", "arrosage", f"{'scheduler' if fromScheduler else 'errors'}")
     files.setState("arrosage", "".join(newState))
     return success
 
@@ -83,16 +92,18 @@ def arrosage(data, source):
 def sendWemos(url, retry=0):
     """Get request to wemos with provided url. Returns if successful."""
     if retry > maxRetry:
-        pb.err(f"-> Cannot send {url} to wemos!")
+        pb.err(f"-> [server] Cannot send {url} to wemos!")
         return False
     elif retry > 0:
-        pb.warn(f"-> retry:{retry} | Sending wemos: {url}")
+        pb.warn(f"-> [server] retry:{retry} | Sending wemos: {url}")
     else:
-        pb.info(f"-> Sending wemos: {url}")
+        pb.info(f"-> [server] Sending wemos: {url}")
     try:
         # request
         if not config['local']:
             requests.get(url, headers={'Connection': 'close'})
+        else:
+            pb.info(f"[server] Simulated request locally ([GET] {url})")
         return True
     except Exception:
         return sendWemos(url, retry=retry+1)

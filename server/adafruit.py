@@ -22,7 +22,7 @@ def connected(client):
     # Subscribes to each feeds
     for feedId in config['adafruit']['feeds']['ids']:
         client.subscribe(feedId)
-    pb.info(f"Connected to adafruit, subscribed to feeds: {', '.join([feedId for feedId in config['adafruit']['feeds']['ids']])}.")
+    pb.info(f"<- [server] Connected to adafruit, subscribed to feeds: {', '.join([feedId for feedId in config['adafruit']['feeds']['ids']])}.")
 
 
 def message(client, feed_id, payload):
@@ -37,7 +37,7 @@ def main():
     for feedName, default in config['adafruit']['feeds']['defaults'].items():
         feedIds = {v:k for k, v in config['adafruit']['feeds']['ids'].items()}
         client.send(feedIds[feedName], default)
-    pb.info("Adafruit feeds reset.")
+    pb.info("-> [server] Adafruit feeds reset.")
 
     # MQTT setup
     clientMQTT.on_connect = connected
