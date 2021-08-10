@@ -6,6 +6,7 @@ config = loadYaml("config")
 
 
 def resetFiles():
+    """Resets text files to default values found in config."""
     for name, path in config['files']['state']['paths'].items():
         with open(path, "w") as file:
             file.write(config['files']['state']['defaults'][name])
@@ -13,12 +14,14 @@ def resetFiles():
 
 
 def setState(name, state):
+    """Sets new text file content."""
     with open(config['files']['state']['paths'][name], "w") as file:
         file.write(state)
     pb.info(f"-> Wrote state {state} to text file {name}.")
 
 
 def getState(name):
+    """Return text file content."""
     with open(config['files']['state']['paths'][name], "r") as file:
         return file.read()
 

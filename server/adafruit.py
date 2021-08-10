@@ -32,7 +32,7 @@ def message(client, feed_id, payload):
 
 def main():
     # Reset feeds
-    if config['local']:  # do not send requests to adafruit on local PC
+    if config['local']:  # do not send requests to adafruit or MQTT when on local PC
         return
     for feedName, default in config['adafruit']['feeds']['defaults'].items():
         feedIds = {v:k for k, v in config['adafruit']['feeds']['ids'].items()}

@@ -8,11 +8,13 @@ paths = {
 
 
 def loadYaml(name):
+    """Loads YAML file content."""
     with open(paths[name], 'r') as stream:
         return yaml.safe_load(stream)
 
 
 def boolToIcon(value, style="checkbox"):
+    """Return emoji base on boolean value."""
     if style == "checkbox":
         return "✅" if value else "❌"
     if style == "light":

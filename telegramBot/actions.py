@@ -45,7 +45,7 @@ def adminAction(bot, adminAgent):
 
 
 def editUsers(bot, adminAgent, involvedUserId, action):
-    """Modify user. (admin only)"""
+    """Modify user permissions. (admin only)"""
     involvedUser = db.User(involvedUserId)
     if action == "authorize":
         if involvedUser['authorized']:

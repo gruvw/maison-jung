@@ -76,7 +76,7 @@ def restricted(permission):
     return decorator
 
 
-def build_menu(buttons, n_cols):
+def buildMenu(buttons, n_cols):
     menu = [buttons[i:i + n_cols] for i in range(0, len(buttons), n_cols)]
     return menu
 
@@ -86,6 +86,7 @@ def build_menu(buttons, n_cols):
 @commandHandler
 @verify
 def start(update, context):
+    """/start handler"""
     user = update.effective_user
     chat = update.effective_chat
     if db.isAuthorized(user.id):
@@ -101,6 +102,7 @@ def start(update, context):
 @verify
 @restricted("authorized")
 def menu(update, context, user):
+    """/menu handler"""
     try:
         oldMenuId = user['menuMessageId']
         user['menuSelection'] = []  # in order to use __setitem__
@@ -111,7 +113,7 @@ def menu(update, context, user):
     except KeyError:
         pass
     menu = getAdminMenus() if user['admin'] else mainMenus
-    replyMarkup = InlineKeyboardMarkup(build_menu(menu['main']['buttons'], n_cols=menu['main']['n_cols']))
+    replyMarkup = InlineKeyboardMarkup(buildMenu(menu['main']['buttons'], n_cols=menu['main']['n_cols']))
     message = context.bot.send_message(user['chatId'], menu['main']['message'], reply_markup=replyMarkup)
     user['menuMessageId'] = message.message_id
 
@@ -120,6 +122,7 @@ def menu(update, context, user):
 @verify
 @restricted("authorized")
 def userCallback(update, context, user):
+    """Callback function for authorized menu actions."""
     query = update.callback_query
     data = query.data
     query.answer()
@@ -166,7 +169,7 @@ def userCallback(update, context, user):
                 for button, setting in zip(buttons[:-1], selectedUserSettings):
                     button.text += " " + boolToIcon(setting)
     message = scene['message'].format(f"_{userMenuSelection[1]}_") if len(userMenuSelection) == 2 else scene['message']
-    replyMarkup = InlineKeyboardMarkup(build_menu(buttons, n_cols=scene['n_cols']))
+    replyMarkup = InlineKeyboardMarkup(buildMenu(buttons, n_cols=scene['n_cols']))
     query.message.edit_text(message, reply_markup=replyMarkup, parse_mode=telegram.ParseMode.MARKDOWN)
     user['menuSelection'] = userMenuSelection  # in order to use __setitem__
 
@@ -175,6 +178,7 @@ def userCallback(update, context, user):
 @verify
 @restricted("admin")
 def adminCallback(update, context, adminUser):
+    """Callback function for admin menu actions."""
     query = update.callback_query
     data = query.data.split(',')[-1]
     query.answer()
@@ -207,7 +211,7 @@ def adminCallback(update, context, adminUser):
                 buttons[0].text += " " + boolToIcon(involvedUser['authorized'])
                 buttons[1].text += " " + boolToIcon(involvedUser['admin'])
     message = scene['message'].format(f"_{adminUserMenuSelection[2]}_") if len(adminUserMenuSelection) == 3 else scene['message']
-    replyMarkup = InlineKeyboardMarkup(build_menu(buttons, n_cols=scene['n_cols']))
+    replyMarkup = InlineKeyboardMarkup(buildMenu(buttons, n_cols=scene['n_cols']))
     query.message.edit_text(message, reply_markup=replyMarkup, parse_mode=telegram.ParseMode.MARKDOWN)
     adminUser['menuSelection'] = adminUserMenuSelection  # in order to use __setitem__
 
