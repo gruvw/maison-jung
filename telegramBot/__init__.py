@@ -105,7 +105,6 @@ def start(update, context):
 @restricted("authorized")
 def menu(update, context, user):
     """/menu handler"""
-    pb.info(f"<- [telegram] User {user} executed /menu")
     try:
         oldMenuId = user['menuMessageId']
         user['menuSelection'] = []  # in order to use __setitem__

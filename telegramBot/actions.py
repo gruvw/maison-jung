@@ -33,7 +33,7 @@ def userAction(bot, userAgent):
         newState = not userAgentSettings[selection[1]][selection[2]]
         userAgentSettings[selection[1]][selection[2]] = newState
         userAgent['settings'] = userAgentSettings  # in order to use __setitem__
-        pb.info(f"-> [telegram] User {userAgent} changed his notifications settings: {selection[1]}/{selection[2]} to {newState}")
+        pb.info(f"-> [telegram] User {userAgent} changed his notifications settings: {selection[1]}/{selection[2]} -> {newState}")
         bot.send_message(userAgent['chatId'],
                          f"🔔 Les notifications _{selection[1]}_ -> _{selection[2]}_ sont maintenant: {boolToIcon(newState)}", parse_mode=telegram.ParseMode.MARKDOWN)
 

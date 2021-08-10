@@ -150,3 +150,4 @@ logs
 configs
 telegramBot/databases
 telegramBot/options.yml
+scheduler/schedules.yml

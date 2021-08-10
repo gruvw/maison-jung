@@ -10,3 +10,4 @@ The following files are ignored by git for security & privacy reasons:
 - `logs/*`
 - `telegramBot/databases/*`
 - `telegramBot/options.yml`
+- `scheduler/schedules.yml`

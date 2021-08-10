@@ -1,5 +1,6 @@
 import printbetter as pb
 import telegramBot
+import scheduler
 from server import adafruit, actions, files
 
 
@@ -22,6 +23,7 @@ def main():
     resetWemos()
     adafruit.main()
     telegramBot.main()
+    scheduler.main()
     pb.info("--- Program ready ---")
 
 

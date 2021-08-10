@@ -4,6 +4,7 @@ import yaml
 paths = {
     "config": "configs/configLocal.yml",
     "options": "telegramBot/options.yml",
+    "schedules": "scheduler/schedules.yml"
 }
 
 
