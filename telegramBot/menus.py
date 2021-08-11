@@ -113,7 +113,7 @@ def getAdminMenus():
         "usersAction": {
             "message": "Modifier les permissions de > {0}:",
             "buttons": [
-                InlineKeyboardButton("Authorize", callback_data="admin,authorize"),
+                InlineKeyboardButton("Authorize", callback_data="admin,authorized"),
                 InlineKeyboardButton("Admin", callback_data="admin,admin"),
                 InlineKeyboardButton("🗑️ Delete", callback_data="admin,delete")
             ],

@@ -1,4 +1,6 @@
+import os
 import telegram
+import uuid
 from copy import deepcopy
 from functools import wraps
 from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
@@ -8,7 +10,7 @@ from server import pb  # import printbetter from __init__.py
 from server.utils import loadYaml, boolToIcon
 import telegramBot.actions
 import telegramBot.database as db
-from telegramBot.menus import mainMenus, getAdminMenus
+from telegramBot import menus
 
 
 config = loadYaml("config")
@@ -19,7 +21,7 @@ config = loadYaml("config")
 ############
 
 # Telegram bot initialization
-updater = Updater(token=config['telegram']['bot']['token'])
+updater = Updater(token=config['telegram']['bots']['token'][os.environ["APP_SCOPE"]])
 bot = updater.bot
 dispatcher = updater.dispatcher
 
@@ -78,6 +80,10 @@ def restricted(permission):
 
 
 def buildMenu(buttons, n_cols):
+    """Appends unique id to each button and builds telegram menu."""
+    uid = uuid.uuid4()
+    for button in buttons:
+        button.callback_data += f"/{uid}"
     menu = [buttons[i:i + n_cols] for i in range(0, len(buttons), n_cols)]
     return menu
 
@@ -114,8 +120,8 @@ def menu(update, context, user):
             pass
     except KeyError:
         pass
-    menu = getAdminMenus() if user['admin'] else mainMenus
-    replyMarkup = InlineKeyboardMarkup(buildMenu(menu['main']['buttons'], n_cols=menu['main']['n_cols']))
+    menu = menus.getAdminMenus() if user['admin'] else menus.mainMenus
+    replyMarkup = InlineKeyboardMarkup(buildMenu(menu['main']['buttons'], menu['main']['n_cols']))
     message = context.bot.send_message(user['chatId'], menu['main']['message'], reply_markup=replyMarkup)
     user['menuMessageId'] = message.message_id
 
@@ -126,19 +132,23 @@ def menu(update, context, user):
 def userCallback(update, context, user):
     """Callback function for authorized menu actions."""
     query = update.callback_query
-    data = query.data
+    data, menuUid = query.data.rsplit("/", 1)
     query.answer()
-    userMenuSelection = user['menuSelection']
-    if data in userMenuSelection:  # prevents double clicks on buttons
-        return
-    userMenuSelection.append(data)
     if data == "home":
         menu(update, context)
         return
-    elif len(userMenuSelection) == 1:
-        scene = mainMenus[data+"Select"]
+    try:
+        if menuUid == user['oldMenuUid']:  # prevents double clicks on buttons
+            return
+    except KeyError:
+        pass
+    user['oldMenuUid'] = menuUid  # stores old menu uid, next click should not have the same
+    userMenuSelection = user['menuSelection']
+    userMenuSelection.append(data)
+    if len(userMenuSelection) == 1:
+        scene = menus.mainMenus[data+"Select"]
     elif len(userMenuSelection) == 2:
-        scene = mainMenus[userMenuSelection[0]+"Action"]
+        scene = menus.mainMenus[userMenuSelection[0]+"Action"]
     elif len(userMenuSelection) == 3:
         # Action
         context.bot.send_chat_action(user['chatId'], telegram.ChatAction.TYPING)
@@ -171,7 +181,7 @@ def userCallback(update, context, user):
                 for button, setting in zip(buttons[:-1], selectedUserSettings):
                     button.text += " " + boolToIcon(setting)
     message = scene['message'].format(f"_{userMenuSelection[1]}_") if len(userMenuSelection) == 2 else scene['message']
-    replyMarkup = InlineKeyboardMarkup(buildMenu(buttons, n_cols=scene['n_cols']))
+    replyMarkup = InlineKeyboardMarkup(buildMenu(buttons, scene['n_cols']))
     query.message.edit_text(message, reply_markup=replyMarkup, parse_mode=telegram.ParseMode.MARKDOWN)
     user['menuSelection'] = userMenuSelection  # in order to use __setitem__
 
@@ -182,16 +192,21 @@ def userCallback(update, context, user):
 def adminCallback(update, context, adminUser):
     """Callback function for admin menu actions."""
     query = update.callback_query
-    data = query.data.split(',')[-1]
+    data, menuUid = query.data.rsplit("/", 1)
+    data = data.split(',')[-1]  # removes admin prefix
     query.answer()
+    try:
+        if menuUid == adminUser['oldMenuUid']:  # prevents double clicks on buttons
+            return
+    except KeyError:
+        pass
+    adminUser['oldMenuUid'] = menuUid  # stores old menu uid, next click should not have the same
     adminUserMenuSelection = adminUser['menuSelection']
-    if data in adminUserMenuSelection:  # prevents double clicks on buttons
-        return
     adminUserMenuSelection.append(data)
     if len(adminUserMenuSelection) in [1, 2]:
-        scene = getAdminMenus()[data+"Select"]
+        scene = menus.getAdminMenus()[data+"Select"]
     elif len(adminUserMenuSelection) == 3:
-        scene = getAdminMenus()[adminUserMenuSelection[1]+"Action"]
+        scene = menus.getAdminMenus()[adminUserMenuSelection[1]+"Action"]
     elif len(adminUserMenuSelection) == 4:
         # Action
         context.bot.send_chat_action(adminUser['chatId'], telegram.ChatAction.TYPING)
@@ -213,7 +228,7 @@ def adminCallback(update, context, adminUser):
                 buttons[0].text += " " + boolToIcon(involvedUser['authorized'])
                 buttons[1].text += " " + boolToIcon(involvedUser['admin'])
     message = scene['message'].format(f"_{adminUserMenuSelection[2]}_") if len(adminUserMenuSelection) == 3 else scene['message']
-    replyMarkup = InlineKeyboardMarkup(buildMenu(buttons, n_cols=scene['n_cols']))
+    replyMarkup = InlineKeyboardMarkup(buildMenu(buttons, scene['n_cols']))
     query.message.edit_text(message, reply_markup=replyMarkup, parse_mode=telegram.ParseMode.MARKDOWN)
     adminUser['menuSelection'] = adminUserMenuSelection  # in order to use __setitem__
 

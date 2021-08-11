@@ -1,3 +1,4 @@
+import os
 import requests
 from server import pb  # import printbetter from __init__.py
 from server import files
@@ -16,13 +17,13 @@ def lampes(data, source, notify=True):
     fromScheduler = source == "scheduler"
     state = list(files.getState("lampes"))
     successes = []
-    for i in range(len(data)):
+    for i, (lampeName, wemosIp) in enumerate(config['wemos']['lampes'].items()):
+        if i+1 > len(data):  # not enough data for every wemos
+            break
         action = data[i]  # A, Z
         if action == "X":
             continue
-        lampeName = list(config['wemos']['lampes'].keys())[i]
         lampeAction = 'on' if action == 'A' else 'off'
-        wemosIp = list(config['wemos']['lampes'].values())[i]
         url = f"http://{wemosIp}/Port0/{lampeAction}"
         success = sendWemos(url)
         successes.append(success)
@@ -44,15 +45,15 @@ def stores(data, source, notify=True):
     fromScheduler = source == "scheduler"
     storesActions = {"A": "open", "Z": "close", "C": "clac", "I": "incli", "S": "stop"}
     successes = []
-    for i in range(3):
+    for i, (storeName, wemosIp) in enumerate(config['wemos']['stores'].items()):
+        if i+1 > len(data):  # not enough data for every wemos
+            break
         dataPart = data[2*i:2*(i+1)]  # pairs of two chars (3A 0Z XX)
         action = dataPart[1]  # A, Z, C, I, S
         if action == "X":
             continue
         storeNb = int(dataPart[0])
-        storeName = list(config['wemos']['stores'].keys())[i]
         storeAction = storesActions[action]
-        wemosIp = list(config['wemos']['stores'].values())[i]
         urlSelect = f"http://{wemosIp}/{storeNb}"  # change selected store first
         urlAction = f"http://{wemosIp}/{storeAction}"  # execute action after
         success = sendWemos(urlSelect) and sendWemos(urlAction)  # sends both requests
@@ -100,7 +101,7 @@ def sendWemos(url, retry=0):
         pb.info(f"-> [server] Sending wemos: {url}")
     try:
         # request
-        if not config['local']:
+        if not os.environ["APP_SCOPE"] == "local":
             requests.get(url, headers={'Connection': 'close'})
         else:
             pb.info(f"[server] Simulated request locally ([GET] {url})")

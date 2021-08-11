@@ -1,8 +1,9 @@
+import os
 import yaml
 
 
 paths = {
-    "config": "configs/configLocal.yml",
+    "config": "config.yml",
     "options": "telegramBot/options.yml",
     "schedules": "scheduler/schedules.yml"
 }

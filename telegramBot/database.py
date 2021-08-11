@@ -1,3 +1,4 @@
+import os
 from tinydb import TinyDB, Query
 from tinydb.operations import delete
 from server.utils import loadYaml
@@ -7,7 +8,7 @@ from server import pb  # import printbetter from __init__.py
 config = loadYaml("config")
 
 # Initialize database
-path = 'telegramBot/databases/databaseLocal.json' if config['local'] else 'telegramBot/databases/databaseRPI.json'
+path = config['telegram']['database']['path'][os.environ["APP_SCOPE"]]
 db = TinyDB(path)
 users = db.table('users')
 USER = Query()
@@ -97,4 +98,4 @@ def getAdminUsers():
 
 def getNotifiedUsers(category, group):
     userTable = users.search(USER.settings[category][group] == True)
-    return [User(user['id']) for user in userTable]
+    return [User(user['id']) for user in userTable if user['authorized']]

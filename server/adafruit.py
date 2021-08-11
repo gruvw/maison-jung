@@ -1,3 +1,4 @@
+import os
 from Adafruit_IO import Client, MQTTClient
 from server import pb  # import printbetter from __init__.py
 import server.actions
@@ -7,8 +8,9 @@ from server.utils import loadYaml
 config = loadYaml("config")
 
 # Adafruit clients
-client = Client(config['adafruit']['credentials']['username'], config['adafruit']['credentials']['apiKey'])  # basic client
-clientMQTT = MQTTClient(config['adafruit']['credentials']['username'], config['adafruit']['credentials']['apiKey'])  # mqtt client
+username, apiKey = config['adafruit']['credentials']['username'], config['adafruit']['credentials']['apiKey']
+client = Client(username, apiKey)  # basic client
+clientMQTT = MQTTClient(username, apiKey)  # mqtt client
 
 feedsActions = {
     "lampes": server.actions.lampes,
@@ -32,14 +34,14 @@ def message(client, feed_id, payload):
 
 def main():
     # Reset feeds
-    if config['local']:  # do not send requests to adafruit or MQTT when on local PC
+    if os.environ["APP_SCOPE"] == "local":  # do not send requests to adafruit or MQTT when on local PC
         return
-    for feedName, default in config['adafruit']['feeds']['defaults'].items():
-        feedIds = {v:k for k, v in config['adafruit']['feeds']['ids'].items()}
-        client.send(feedIds[feedName], default)
+    for feedId, feedName in config['adafruit']['feeds']['ids'].items():
+        client.send(feedId, config['adafruit']['feeds']['defaults'][feedName])
     pb.info("-> [server] Adafruit feeds reset")
 
     # MQTT setup
     clientMQTT.on_connect = connected
     clientMQTT.on_message = message
+    clientMQTT.connect()
     clientMQTT.loop_background()

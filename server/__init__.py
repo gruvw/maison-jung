@@ -5,7 +5,7 @@ from server import adafruit, actions, files
 
 
 def resetWemos():
-    """Exectue actions sending wemos default values."""
+    """Exectues actions sending wemos default values based on text files data."""
     # Lampes
     actions.lampes(files.getState("lampes"), "initialisation", notify=False)
     # Arrosage
@@ -19,15 +19,15 @@ def resetWemos():
 def main():
     pb.init()
     pb.info("--- Initialisation ---")
-    files.main()
+    files.main()  # before resetWemos
     resetWemos()
-    adafruit.main()
     telegramBot.main()
     scheduler.main()
+    adafruit.main()
     pb.info("--- Program ready ---")
 
 
 # TODO long term:
 # - Typing
-# - Scheduler
+# - Unified database
 # - Flask server (site)
