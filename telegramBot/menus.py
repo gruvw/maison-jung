@@ -11,88 +11,91 @@ options = loadYaml("options")
 # Menus #
 #########
 
-mainMenus = {
-    "main": {
-        "message": "Choisir le domaine:",
-        "buttons": [
-            InlineKeyboardButton("Lampes", callback_data="lampes"),
-            InlineKeyboardButton("Stores", callback_data="stores"),
-            InlineKeyboardButton("Arrosage", callback_data="arrosage"),
-            InlineKeyboardButton("Paramètres", callback_data="settings")
-        ],
-        "n_cols": 2
-    },
-    "lampesSelect": {
-        "message": "Choisir la lampe:",
-        "buttons": [
-            InlineKeyboardButton(lampe.title(), callback_data=lampe)
-            for lampe in options['lampes']['names']
-        ],
-        "n_cols": 3
-    },
-    "lampesAction": {
-        "message": "Que faire avec la lampe > {0}:",
-        "buttons": [
-            InlineKeyboardButton(action.title(), callback_data=data)
-            for action, data in options['lampes']['actions'].items()
-        ],
-        "n_cols": 2
-    },
-    "storesSelect": {
-        "message": "Choisir le store:",
-        "buttons": [
-            InlineKeyboardButton(store.title(), callback_data=store)
-            for store in options['stores']['names']
-        ],
-        "n_cols": 4
-    },
-    "storesAction": {
-        "message": "Que faire avec le store > {0}:",
-        "buttons": [
-            InlineKeyboardButton(action.title(), callback_data=data)
-            for action, data in options['stores']['actions'].items()
-        ],
-        "n_cols": 2
-    },
-    "arrosageSelect": {
-        "message": "Choisir la vanne:",
-        "buttons": [
-            InlineKeyboardButton(str(vanne), callback_data=vanne)
-            for vanne in options['arrosage']['vannes']['names']
-        ],
-        "n_cols": 5
-    },
-    "arrosageAction": {
-        "message": "Que faire avec la vanne > {0}:",
-        "buttons": [
-            InlineKeyboardButton(action.title(), callback_data=data)
-            for action, data in options['arrosage']['vannes']['actions'].items()
-        ],
-        "n_cols": 2
-    },
-    "settingsSelect": {
-        "message": "Choisir le paramètre:",
-        "buttons": [
-            InlineKeyboardButton(param.title(), callback_data=param)
-            for param in ["lampes", "stores", "arrosage"]
-        ],
-        "n_cols": 2
-    },
-    "settingsAction": {
-        "message": "Changer les notifications > {0}:",
-        "buttons": [
-            InlineKeyboardButton("🕑 Scheduler", callback_data="scheduler"),
-            InlineKeyboardButton("👍 Success", callback_data="success"),
-            InlineKeyboardButton("⚠️ Erreurs", callback_data="errors"),
-        ],
-        "n_cols": 2
+def getMainMenus():
+    """Returns main menus (authorized users only)."""
+    mainMenus = {
+        "main": {
+            "message": "Choisir le domaine:",
+            "buttons": [
+                InlineKeyboardButton("Lampes", callback_data="lampes"),
+                InlineKeyboardButton("Stores", callback_data="stores"),
+                InlineKeyboardButton("Arrosage", callback_data="arrosage"),
+                InlineKeyboardButton("Paramètres", callback_data="settings")
+            ],
+            "n_cols": 2
+        },
+        "lampesSelect": {
+            "message": "Choisir la lampe:",
+            "buttons": [
+                InlineKeyboardButton(lampe.title(), callback_data=lampe)
+                for lampe in options['lampes']['names']
+            ],
+            "n_cols": 3
+        },
+        "lampesAction": {
+            "message": "Que faire avec la lampe > {0}:",
+            "buttons": [
+                InlineKeyboardButton(action.title(), callback_data=data)
+                for action, data in options['lampes']['actions'].items()
+            ],
+            "n_cols": 2
+        },
+        "storesSelect": {
+            "message": "Choisir le store:",
+            "buttons": [
+                InlineKeyboardButton(store.title(), callback_data=store)
+                for store in options['stores']['names']
+            ],
+            "n_cols": 4
+        },
+        "storesAction": {
+            "message": "Que faire avec le store > {0}:",
+            "buttons": [
+                InlineKeyboardButton(action.title(), callback_data=data)
+                for action, data in options['stores']['actions'].items()
+            ],
+            "n_cols": 2
+        },
+        "arrosageSelect": {
+            "message": "Choisir la vanne:",
+            "buttons": [
+                InlineKeyboardButton(str(vanne), callback_data=str(vanne))
+                for vanne in options['arrosage']['vannes']['names']
+            ],
+            "n_cols": 5
+        },
+        "arrosageAction": {
+            "message": "Que faire avec la vanne > {0}:",
+            "buttons": [
+                InlineKeyboardButton(action.title(), callback_data=data)
+                for action, data in options['arrosage']['vannes']['actions'].items()
+            ],
+            "n_cols": 2
+        },
+        "settingsSelect": {
+            "message": "Choisir le paramètre:",
+            "buttons": [
+                InlineKeyboardButton(param.title(), callback_data=param)
+                for param in ["lampes", "stores", "arrosage"]
+            ],
+            "n_cols": 2
+        },
+        "settingsAction": {
+            "message": "Changer les notifications > {0}:",
+            "buttons": [
+                InlineKeyboardButton("🕑 Scheduler", callback_data="scheduler"),
+                InlineKeyboardButton("👍 Success", callback_data="success"),
+                InlineKeyboardButton("⚠️ Erreurs", callback_data="errors"),
+            ],
+            "n_cols": 2
+        }
     }
-}
+    return mainMenus
 
 
 def getAdminMenus():
-    # In a function because needs refresh from DB
-    adminMenus = deepcopy(mainMenus)
+    """Returns admin menus (admin users only). (pulls data from database)"""
+    adminMenus = getMainMenus()
     adminMenus['main']['buttons'].append(InlineKeyboardButton("Admin", callback_data="admin"))
     adminAddons = {
         "adminSelect": {

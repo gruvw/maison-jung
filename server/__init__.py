@@ -29,5 +29,6 @@ def main():
 
 # TODO long term:
 # - Typing
+# - Packaging
 # - Unified database
 # - Flask server (site)

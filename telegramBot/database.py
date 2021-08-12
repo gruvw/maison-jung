@@ -13,6 +13,7 @@ db = TinyDB(path)
 users = db.table('users')
 USER = Query()
 
+
 # Exceptions
 class UserNotFound(Exception):
     """Raised if userId does not existes in DB."""
@@ -64,17 +65,17 @@ def createUser(userId, chatId, name, authorized=False, admin=False):
                           "scheduler": False,
                           "success": False,
                           "errors": False
-                          },
+                      },
                       "stores": {
                           "scheduler": False,
                           "success": False,
                           "errors": False
-                          },
+                      },
                       "arrosage": {
                           "scheduler": False,
                           "success": False,
                           "errors": False
-                          }
+                      }
                   }},
                  USER.id == userId)
     pb.info(f"-> [database] New user created {name} ({userId})")

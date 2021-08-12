@@ -28,7 +28,7 @@ def userAction(bot, userAgent):
         if not server.actions.arrosage(data, f"telegram {userAgent['name']}"):
             bot.send_message(userAgent['chatId'], "⚠️ Une erreur est survenue.")
     elif selection[0] == "settings":
-        # toggle setting state
+        # Toggle setting state
         userAgentSettings = userAgent['settings']
         newState = not userAgentSettings[selection[1]][selection[2]]
         userAgentSettings[selection[1]][selection[2]] = newState

@@ -120,7 +120,7 @@ def menu(update, context, user):
             pass
     except KeyError:
         pass
-    menu = menus.getAdminMenus() if user['admin'] else menus.mainMenus
+    menu = menus.getAdminMenus() if user['admin'] else menus.getMainMenus()
     replyMarkup = InlineKeyboardMarkup(buildMenu(menu['main']['buttons'], menu['main']['n_cols']))
     message = context.bot.send_message(user['chatId'], menu['main']['message'], reply_markup=replyMarkup)
     user['menuMessageId'] = message.message_id
@@ -146,9 +146,9 @@ def userCallback(update, context, user):
     userMenuSelection = user['menuSelection']
     userMenuSelection.append(data)
     if len(userMenuSelection) == 1:
-        scene = menus.mainMenus[data+"Select"]
+        scene = menus.getMainMenus()[data+"Select"]
     elif len(userMenuSelection) == 2:
-        scene = menus.mainMenus[userMenuSelection[0]+"Action"]
+        scene = menus.getMainMenus()[userMenuSelection[0]+"Action"]
     elif len(userMenuSelection) == 3:
         # Action
         context.bot.send_chat_action(user['chatId'], telegram.ChatAction.TYPING)
