@@ -1,19 +1,19 @@
-from copy import deepcopy
 from telegram import InlineKeyboardButton
-import telegramBot.database as db
-from server.utils import loadYaml
+
+from . import database as db
+from ..utils import load_yaml, paths
 
 
-options = loadYaml("options")
+options = load_yaml(paths['options'])
 
 
 #########
 # Menus #
 #########
 
-def getMainMenus():
+def get_main_menus():
     """Returns main menus (authorized users only)."""
-    mainMenus = {
+    main_menus = {
         "main": {
             "message": "Choisir le domaine:",
             "buttons": [
@@ -24,7 +24,7 @@ def getMainMenus():
             ],
             "n_cols": 2
         },
-        "lampesSelect": {
+        "lampes_select": {
             "message": "Choisir la lampe:",
             "buttons": [
                 InlineKeyboardButton(lampe.title(), callback_data=lampe)
@@ -32,7 +32,7 @@ def getMainMenus():
             ],
             "n_cols": 3
         },
-        "lampesAction": {
+        "lampes_action": {
             "message": "Que faire avec la lampe > {0}:",
             "buttons": [
                 InlineKeyboardButton(action.title(), callback_data=data)
@@ -40,7 +40,7 @@ def getMainMenus():
             ],
             "n_cols": 2
         },
-        "storesSelect": {
+        "stores_select": {
             "message": "Choisir le store:",
             "buttons": [
                 InlineKeyboardButton(store.title(), callback_data=store)
@@ -48,7 +48,7 @@ def getMainMenus():
             ],
             "n_cols": 4
         },
-        "storesAction": {
+        "stores_action": {
             "message": "Que faire avec le store > {0}:",
             "buttons": [
                 InlineKeyboardButton(action.title(), callback_data=data)
@@ -56,7 +56,7 @@ def getMainMenus():
             ],
             "n_cols": 2
         },
-        "arrosageSelect": {
+        "arrosage_select": {
             "message": "Choisir la vanne:",
             "buttons": [
                 InlineKeyboardButton(str(vanne), callback_data=str(vanne))
@@ -64,7 +64,7 @@ def getMainMenus():
             ],
             "n_cols": 5
         },
-        "arrosageAction": {
+        "arrosage_action": {
             "message": "Que faire avec la vanne > {0}:",
             "buttons": [
                 InlineKeyboardButton(action.title(), callback_data=data)
@@ -72,7 +72,7 @@ def getMainMenus():
             ],
             "n_cols": 2
         },
-        "settingsSelect": {
+        "settings_select": {
             "message": "Choisir le paramètre:",
             "buttons": [
                 InlineKeyboardButton(param.title(), callback_data=param)
@@ -80,7 +80,7 @@ def getMainMenus():
             ],
             "n_cols": 2
         },
-        "settingsAction": {
+        "settings_action": {
             "message": "Changer les notifications > {0}:",
             "buttons": [
                 InlineKeyboardButton("🕑 Scheduler", callback_data="scheduler"),
@@ -90,30 +90,30 @@ def getMainMenus():
             "n_cols": 2
         }
     }
-    return mainMenus
+    return main_menus
 
 
-def getAdminMenus():
+def get_admin_menus():
     """Returns admin menus (admin users only). (pulls data from database)"""
-    adminMenus = getMainMenus()
-    adminMenus['main']['buttons'].append(InlineKeyboardButton("Admin", callback_data="admin"))
-    adminAddons = {
-        "adminSelect": {
+    admin_menus = get_main_menus()
+    admin_menus['main']['buttons'].append(InlineKeyboardButton("Admin", callback_data="admin"))
+    admin_addons = {
+        "admin_select": {
             "message": "Zone d'administration:",
             "buttons": [
                 InlineKeyboardButton("Users", callback_data="admin,users")
             ],
             "n_cols": 1
         },
-        "usersSelect": {
+        "users_select": {
             "message": "Choisir l'utilisateur:",
             "buttons": [
                 InlineKeyboardButton(f"{user['name']} ({user['id']})", callback_data=f"admin,{user['name']}-{user['id']}")
-                for user in db.getUsers()
+                for user in db.get_users()
             ],
             "n_cols": 2
         },
-        "usersAction": {
+        "users_action": {
             "message": "Modifier les permissions de > {0}:",
             "buttons": [
                 InlineKeyboardButton("Authorize", callback_data="admin,authorized"),
@@ -123,5 +123,5 @@ def getAdminMenus():
             "n_cols": 2
         },
     }
-    adminMenus = {**adminMenus, **adminAddons}
-    return adminMenus
+    admin_menus = {**admin_menus, **admin_addons}
+    return admin_menus

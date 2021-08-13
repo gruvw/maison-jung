@@ -1,22 +1,22 @@
-import os
 import yaml
 
 
 paths = {
     "config": "config.yml",
-    "options": "telegramBot/options.yml",
-    "schedules": "scheduler/schedules.yml"
+    "options": "options.yml",
+    "schedules": "schedules.yml",
+    "database": "database.json",
 }
 
 
-def loadYaml(name):
+def load_yaml(file_path):
     """Loads YAML file content."""
-    with open(paths[name], 'r') as stream:
+    with open(file_path, 'r') as stream:
         return yaml.safe_load(stream)
 
 
-def boolToIcon(value, style="checkbox"):
-    """Return emoji base on boolean value."""
+def bool_to_icon(value, style="checkbox"):
+    """Returns emoji based on boolean value."""
     if style == "checkbox":
         return "✅" if value else "❌"
     if style == "light":

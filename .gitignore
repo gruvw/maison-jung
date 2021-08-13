@@ -148,6 +148,8 @@ cython_debug/
 textFiles
 logs
 config.yml
-telegramBot/databases
-telegramBot/options.yml
-scheduler/schedules.yml
+database.json
+options.yml
+schedules.yml
+realarrosage.txt
+reallampes.txt

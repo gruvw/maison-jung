@@ -1,15 +1,14 @@
 import os
+import printbetter as pb
 from tinydb import TinyDB, Query
-from tinydb.operations import delete
-from server.utils import loadYaml
-from server import pb  # import printbetter from __init__.py
+
+from ..utils import load_yaml, paths
 
 
-config = loadYaml("config")
+config = load_yaml(paths['config'])
 
 # Initialize database
-path = config['telegram']['database']['path'][os.environ["APP_SCOPE"]]
-db = TinyDB(path)
+db = TinyDB(paths['database'])
 users = db.table('users')
 USER = Query()
 
@@ -30,14 +29,14 @@ class User:
         if not user:
             raise UserNotFound(f"User id {userId} does not exists in database!")
         self.id = userId
-        self.menuSelection = user['menuSelection']
+        self.menu_selection = user['menu_selection']
 
     def __repr__(self):
         return f"{self['name']} ({self['id']})"
 
     def __getitem__(self, key):
-        if key == "menuSelection":
-            return self.menuSelection
+        if key == "menu_selection":
+            return self.menu_selection
         user = users.get(USER.id == self.id)
         return user[key]
 
@@ -53,13 +52,13 @@ class User:
 # Methods #
 ###########
 
-def createUser(userId, chatId, name, authorized=False, admin=False):
-    users.upsert({"id": userId,
-                  "chatId": chatId,
+def create_user(user_id, chat_id, name, authorized=False, admin=False):
+    users.upsert({"id": user_id,
+                  "chat_id": chat_id,
                   "name": name,
                   "authorized": authorized,
                   "admin": admin,
-                  "menuSelection": [],
+                  "menu_selection": [],
                   "settings": {
                       "lampes": {
                           "scheduler": False,
@@ -77,26 +76,26 @@ def createUser(userId, chatId, name, authorized=False, admin=False):
                           "errors": False
                       }
                   }},
-                 USER.id == userId)
-    pb.info(f"-> [database] New user created {name} ({userId})")
+                 USER.id == user_id)
+    pb.info(f"-> [database] New user created {name} ({user_id})")
 
 
-def isAuthorized(userId):
+def is_authorized(userId):
     user = users.get(USER.id == userId)
     if user:
         return user['authorized']
 
 
-def getUsers():
-    userTable = users.all()
-    return [User(user['id']) for user in userTable]
+def get_users():
+    user_table = users.all()
+    return [User(user['id']) for user in user_table]
 
 
-def getAdminUsers():
-    adminUsers = users.search(USER.admin == True)
-    return [User(adminUser['id']) for adminUser in adminUsers]
+def get_admin_users():
+    admin_users = users.search(USER.admin == True)
+    return [User(admin_user['id']) for admin_user in admin_users]
 
 
-def getNotifiedUsers(category, group):
-    userTable = users.search(USER.settings[category][group] == True)
-    return [User(user['id']) for user in userTable if user['authorized']]
+def get_notified_users(category, group):
+    user_table = users.search(USER.settings[category][group] == True)
+    return [User(user['id']) for user in user_table if user['authorized']]
