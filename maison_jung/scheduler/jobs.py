@@ -7,7 +7,6 @@ from .. import server
 from ..utils import load_yaml, paths
 
 
-schedules = load_yaml(paths['schedules'])
 config = load_yaml(paths['config'])
 
 latitude, longitude = config['location']
@@ -43,8 +42,8 @@ intervals = {**intervals,
              ]}
 
 
-def update():
-    """Updates jobs based on schedules file."""
+def update(schedules):
+    """Updates jobs."""
     sun_hours = {
         "sunrise": sun.get_local_sunrise_time(),
         "sunset": sun.get_local_sunset_time()
@@ -53,13 +52,13 @@ def update():
         schedule.clear(category)  # deletes every job
     for interval, jobs in intervals.items():
         for category, tasks in schedules[interval].items():
-            if not tasks:  # no tasks in category
+            if not tasks:  # no task in category
                 continue
+            tags = [category]
             for task in tasks:
                 if not task['enabled']:
                     continue
                 time_data = task['time'].split('/')
-                tags = [category]
                 if len(time_data) > 1:  # in relation to sunrise or sunset
                     time = sun_hours[time_data[0]] + timedelta(minutes=int(time_data[1]))
                     time = time.strftime('%H:%M')
@@ -71,7 +70,7 @@ def update():
     pb.info("-> [scheduler] Jobs updated")
 
 
-def update_sun():
+def update_sun(schedules):
     """Updates sunrise and sunset jobs execution time."""
     sun_hours = {
         "sunrise": sun.get_local_sunrise_time(),

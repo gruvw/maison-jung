@@ -29,7 +29,5 @@ def start():
 
 # TODO long term:
 # - Typing
-# - Packaging
-# - printbetter import
 # - text files in DB (ready for drop)
 # - Flask server (site)

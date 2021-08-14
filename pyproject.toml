@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "maison-jung"
+version = "0.1.2"
+description = "Custom home IOT server."
+authors = ["gruvw <gruvw.dev@gmail.com>"]
+readme = "README.md"
+homepage = "https://github.com/gruvw/maison-jung"
+packages = [
+    { include = "maison_jung" }
+]
+
+[tool.poetry.scripts]
+maison-jung = 'maison_jung.cli:run'
+
+[tool.poetry.dependencies]
+python = "^3.7"
+printbetter = "^2.0"
+schedule = "^1.1.0"
+adafruit-io = "^2.5.0"
+python-telegram-bot = "^13.7"
+tinydb = "^4.5.1"
+PyYAML = "^5.4.1"
+suntime = "^1.2.5"
+click = "^8.0.1"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

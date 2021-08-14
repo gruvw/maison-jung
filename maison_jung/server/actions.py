@@ -9,7 +9,7 @@ from ..utils import bool_to_icon, load_yaml, paths
 
 config = load_yaml(paths['config'])
 
-max_retry = 2  # nb of retries for wemos requests
+max_retry = config['max_retry']  # nb of retries for wemos requests
 
 
 def lampes(data, source, notify=True):
@@ -101,7 +101,7 @@ def sendWemos(url, retry=0):
     else:
         pb.info(f"-> [server] Sending wemos: {url}")
     try:
-        # request
+        # Request
         if not config['local']:
             requests.get(url, headers={'Connection': 'close'})
         else:

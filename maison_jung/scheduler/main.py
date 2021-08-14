@@ -37,11 +37,11 @@ def file_check():
     if schedules != new_schedules:
         pb.info("<- [scheduler] Schedules file changed")
         schedules = new_schedules
-        jobs.update()
+        jobs.update(schedules)
 
 
 def start():
-    jobs.update()
+    jobs.update(schedules)
     schedule.every(1).minutes.do(file_check)
-    schedule.every().day.at("13:00").do(jobs.update_sun)
+    schedule.every().day.at("13:00").do(jobs.update_sun, schedules)
     run_continuously()  # starts schedule thread

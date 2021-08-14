@@ -15,7 +15,7 @@ __pycache__/
 .Python
 build/
 develop-eggs/
-dist/
+dist
 downloads/
 eggs/
 .eggs/
@@ -146,10 +146,4 @@ cython_debug/
 
 .vscode
 textFiles
-logs
-config.yml
-database.json
-options.yml
-schedules.yml
-realarrosage.txt
-reallampes.txt
+local

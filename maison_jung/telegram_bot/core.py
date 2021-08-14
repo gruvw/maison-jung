@@ -15,7 +15,7 @@ from ..utils import bool_to_icon, load_yaml, paths
 config = load_yaml(paths['config'])
 
 # Telegram bot initialization
-updater = Updater(token=config['telegram']['bots']['token'])
+updater = Updater(token=config['telegram']['bot']['token'])
 bot = updater.bot
 dispatcher = updater.dispatcher
 
