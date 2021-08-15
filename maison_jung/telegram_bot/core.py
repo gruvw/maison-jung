@@ -23,8 +23,8 @@ dispatcher = updater.dispatcher
 # Decorators and utilities
 
 patterns = {
-    "mainMenu": lambda data: "admin" not in data,
-    "adminMenu": lambda data: "admin" in data,
+    "main_menu": lambda data: "admin" not in data,
+    "admin_menu": lambda data: "admin" in data,
 }
 
 
@@ -120,7 +120,7 @@ def menu(update, context, user):
     user['menu_message_id'] = message.message_id
 
 
-@callback_handler(patterns['mainMenu'])
+@callback_handler(patterns['main_menu'])
 @verify
 @restricted("authorized")
 def user_callback(update, context, user):
@@ -180,7 +180,7 @@ def user_callback(update, context, user):
     user['menu_selection'] = user_menu_selection  # in order to use __setitem__
 
 
-@callback_handler(patterns['adminMenu'])
+@callback_handler(patterns['admin_menu'])
 @verify
 @restricted("admin")
 def admin_callback(update, context, admin_user):
@@ -198,9 +198,9 @@ def admin_callback(update, context, admin_user):
     admin_user_menu_selection = admin_user['menu_selection']
     admin_user_menu_selection.append(data)
     if len(admin_user_menu_selection) in [1, 2]:
-        scene = menus.get_admin_menus()[data+"Select"]
+        scene = menus.get_admin_menus()[data+"_select"]
     elif len(admin_user_menu_selection) == 3:
-        scene = menus.get_admin_menus()[admin_user_menu_selection[1]+"Action"]
+        scene = menus.get_admin_menus()[admin_user_menu_selection[1]+"_action"]
     elif len(admin_user_menu_selection) == 4:
         # Action
         context.bot.send_chat_action(admin_user['chat_id'], telegram.ChatAction.TYPING)
