@@ -11,7 +11,7 @@ paths = {
 
 def load_yaml(file_path):
     """Loads YAML file content."""
-    with open(file_path, 'r') as stream:
+    with open(file_path, "r") as stream:
         return yaml.safe_load(stream)
 
 

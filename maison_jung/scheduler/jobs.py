@@ -58,11 +58,11 @@ def update(schedules):
             for task in tasks:
                 if not task['enabled']:
                     continue
-                time_data = task['time'].split('/')
+                time_data = task['time'].split("/")
                 if len(time_data) > 1:  # in relation to sunrise or sunset
                     time = sun_hours[time_data[0]] + timedelta(minutes=int(time_data[1]))
-                    time = time.strftime('%H:%M')
-                    tags.append('sun')
+                    time = time.strftime("%H:%M")
+                    tags.append("sun")
                 else:
                     time = time_data[0]
                 for job in jobs:
@@ -78,16 +78,16 @@ def update_sun(schedules):
     }
     schedule.clear("sun")  # deletes jobs in relation to sunrise or sunset
     for interval, jobs in intervals.items():
-        for category, tasks in schedules[interval]:
+        for category, tasks in schedules[interval].items():
             if not tasks:  # no tasks in category
                 continue
             for task in tasks:
-                time_data = task['time'].split('/')
-                if not task['enabled'] or len(time) <= 1:  # verifies that task is enabled and in relation to sunrise or sunset
+                time_data = task['time'].split("/")
+                if not task['enabled'] or len(time_data) <= 1:  # verifies that task is enabled and in relation to sunrise or sunset
                     continue
                 tags = [category, "sun"]
                 time = sun_hours[time_data[0]] + timedelta(minutes=int(time_data[1]))
-                time = time.strftime('%H:%M')
+                time = time.strftime("%H:%M")
                 for job in jobs:
-                    job().at(time).do(actions[category], data=task['data'], source="scheduler").tags(*tags)  # adds job to schedule
+                    job().at(time).do(actions[category], data=task['data'], source="scheduler").tag(*tags)  # adds job to schedule
     pb.info(f"-> [scheduler] Updated sun related jobs (sunrise: {sun_hours['sunrise'].strftime('%H:%M')}, sunset: {sun_hours['sunset'].strftime('%H:%M')})")

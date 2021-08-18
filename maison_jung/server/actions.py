@@ -24,7 +24,7 @@ def lampes(data, source, notify=True):
         action = data[i]  # A, Z
         if action == "X":
             continue
-        lampe_action = 'on' if action == 'A' else 'off'
+        lampe_action = "on" if action == "A" else "off"
         url = f"http://{wemos_ip}/Port0/{lampe_action}"
         success = sendWemos(url)
         successes.append(success)
@@ -75,7 +75,7 @@ def arrosage(data, source, notify=True):
     # Only one vanne at a time
     action = data[2]  # A, Z
     vanne = int(data[:2])
-    vanne_action = 'on' if action == 'A' else 'off'
+    vanne_action = "on" if action == "A" else "off"
     wemos_ip = config['wemos']['arrosage']['armoire']
     url = f"http://{wemos_ip}/{vanne}/{vanne_action}"
     success = sendWemos(url)
@@ -103,7 +103,7 @@ def sendWemos(url, retry=0):
     try:
         # Request
         if not config['local']:
-            requests.get(url, headers={'Connection': 'close'})
+            requests.get(url, headers={"Connection": "close"})
         else:
             pb.info(f"[server] Simulated request locally ([GET] {url})")
         return True

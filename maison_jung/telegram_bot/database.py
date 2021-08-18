@@ -9,7 +9,7 @@ config = load_yaml(paths['config'])
 
 # Initialize database
 db = TinyDB(paths['database'])
-users = db.table('users')
+users = db.table("users")
 USER = Query()
 
 

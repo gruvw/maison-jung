@@ -3,7 +3,7 @@ import telegram
 import uuid
 from copy import deepcopy
 from functools import wraps
-from telegram import ChatAction, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
 
 from .. import telegram_bot
