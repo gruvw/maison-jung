@@ -43,5 +43,5 @@ def file_check():
 def start():
     jobs.update(schedules)
     schedule.every(1).minutes.do(file_check)
-    schedule.every().day.at("21:45").do(jobs.update_sun, schedules)
+    schedule.every().day.at("13:00").do(jobs.update_sun, schedules)
     run_continuously()  # starts schedule thread
