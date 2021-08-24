@@ -132,7 +132,7 @@ proxy = ["pysocks"]
 
 [[package]]
 name = "printbetter"
-version = "2.0"
+version = "2.1"
 description = "Printing perfix and log file!"
 category = "main"
 optional = false
@@ -308,7 +308,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "3879733cba91cf15cd29d9a3ba7cfbe302e7afc1cddcfda523f441cf42e15a08"
+content-hash = "9f7416ca33c907ab9730675d74c7fde4880f50f03ab9a585baa6a0898f08dfa1"
 
 [metadata.files]
 adafruit-io = [
@@ -368,7 +368,7 @@ paho-mqtt = [
     {file = "paho-mqtt-1.5.1.tar.gz", hash = "sha256:9feb068e822be7b3a116324e01fb6028eb1d66412bf98595ae72698965cb1cae"},
 ]
 printbetter = [
-    {file = "printbetter-2.0.tar.gz", hash = "sha256:b285af1da38ed5d2432a4f2bbba818a03acbf4f2efcb1cf4d27ce4ac6d63ea32"},
+    {file = "printbetter-2.1.tar.gz", hash = "sha256:80a29348d4472f52a4e86ef4fd67a5d1f42e38593466eb2aaa7f19e88b491e6f"},
 ]
 python-dateutil = [
     {file = "python-dateutil-2.8.2.tar.gz", hash = "sha256:0123cacc1627ae19ddf3c27a5de5bd67ee4586fbdd6440d9748f8abb483d3e86"},

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "maison-jung"
-version = "0.1.5"
+version = "0.1.6"
 description = "Custom home IOT server."
 authors = ["gruvw <gruvw.dev@gmail.com>"]
 readme = "README.md"
@@ -14,7 +14,7 @@ maison-jung = 'maison_jung.cli:run'
 
 [tool.poetry.dependencies]
 python = "^3.7"
-printbetter = "^2.0"
+printbetter = "^2.1"
 schedule = "^1.1.0"
 adafruit-io = "^2.5.0"
 python-telegram-bot = "^13.7"

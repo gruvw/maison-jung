@@ -17,7 +17,7 @@ def reset_wemos():
 
 
 def start():
-    pb.init(logPath=utils.paths['directory']+"logs/%d-%m-%y_%H.%M.%S.log")
+    pb.init(log_path=utils.paths['directory']+"logs/%d-%m-%y_%H.%M.%S.log")
     pb.info("--- Initialisation ---")
     files.reset_files()  # before reset_wemos
     reset_wemos()
