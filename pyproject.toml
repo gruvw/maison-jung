@@ -14,7 +14,7 @@ maison-jung = 'maison_jung.cli:run'
 
 [tool.poetry.dependencies]
 python = "^3.7"
-printbetter = "^2.1"
+printbetter = "^2.2"
 schedule = "^1.1.0"
 adafruit-io = "^2.5.0"
 python-telegram-bot = "^13.7"
