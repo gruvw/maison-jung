@@ -21,7 +21,7 @@ feeds_actions = {
 
 
 def connected(client):
-    """The connect function for MQTT with adafruit."""
+    """The on-connect callback for MQTT with adafruit."""
     # Subscribes to each feeds
     for feed_id in config['adafruit']['feeds']['ids']:
         client.subscribe(feed_id)
@@ -29,8 +29,14 @@ def connected(client):
 
 
 def message(client, feed_id, payload):
-    """The on-message function for MQTT with adafruit."""
+    """The on-message callback for MQTT with adafruit."""
     feeds_actions[config['adafruit']['feeds']['ids'][feed_id]](payload, "adafruit")
+
+
+def disconnect(client):
+    """The on-disconnect callback for MQTT with adafruit."""
+    pb.warn("<- [server] Adafruit MQTT client disconnected! (trying to reconnect...)")
+    client.connect()
 
 
 def start():
@@ -44,5 +50,6 @@ def start():
     # MQTT setup
     mqtt_client.on_connect = connected
     mqtt_client.on_message = message
+    mqtt_client.on_disconnect = disconnect
     mqtt_client.connect()
     mqtt_client.loop_background()
