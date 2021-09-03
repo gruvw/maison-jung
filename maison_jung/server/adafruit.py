@@ -33,12 +33,6 @@ def message(client, feed_id, payload):
     feeds_actions[config['adafruit']['feeds']['ids'][feed_id]](payload, "adafruit")
 
 
-def disconnect(client):
-    """The on-disconnect callback for MQTT with adafruit."""
-    pb.warn("<- [server] Adafruit MQTT client disconnected! (trying to reconnect...)")
-    client.connect()
-
-
 def start():
     # Reset feeds
     if config['local']:  # do not send requests to adafruit or MQTT when on local PC
@@ -50,6 +44,5 @@ def start():
     # MQTT setup
     mqtt_client.on_connect = connected
     mqtt_client.on_message = message
-    mqtt_client.on_disconnect = disconnect
     mqtt_client.connect()
-    mqtt_client.loop_background()
+    mqtt_client.loop_blocking()

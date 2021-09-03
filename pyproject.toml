@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "maison-jung"
-version = "0.1.7"
+version = "0.1.8"
 description = "Custom home IOT server."
 authors = ["gruvw <gruvw.dev@gmail.com>"]
 readme = "README.md"

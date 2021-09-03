@@ -23,8 +23,8 @@ def start():
     reset_wemos()
     telegram_bot.main.start()
     scheduler.main.start()
-    adafruit.start()
     pb.info("--- Program ready ---")
+    adafruit.start()
 
 
 # TODO long term:
