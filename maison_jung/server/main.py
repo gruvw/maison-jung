@@ -22,9 +22,9 @@ def start():
     files.reset_files()  # before reset_wemos
     reset_wemos()
     telegram_bot.main.start()
+    adafruit.start()  # before scheduler
     scheduler.main.start()
     pb.info("--- Program ready ---")
-    adafruit.start()
 
 
 # TODO long term:

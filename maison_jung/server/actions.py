@@ -103,7 +103,7 @@ def sendWemos(url, retry=0):
     try:
         # Request
         if not config['local']:
-            requests.get(url, headers={"Connection": "close"})
+            requests.get(url, headers={"Connection": "close"}, timeout=5)
         else:
             pb.info(f"[server] Simulated request locally ([GET] {url})")
         return True

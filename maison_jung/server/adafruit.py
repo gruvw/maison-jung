@@ -1,4 +1,5 @@
 import os
+import threading
 import printbetter as pb
 from Adafruit_IO import Client, MQTTClient
 
@@ -8,10 +9,8 @@ from ..utils import load_yaml, paths
 
 config = load_yaml(paths['config'])
 
-# Adafruit clients
-username, api_key = config['adafruit']['credentials']['username'], config['adafruit']['credentials']['key']
-client = Client(username, api_key)  # basic client
-mqtt_client = MQTTClient(username, api_key)  # mqtt client
+username = config['adafruit']['credentials']['username']
+api_key = config['adafruit']['credentials']['key']
 
 feeds_actions = {
     "lampes": actions.lampes,
@@ -33,10 +32,15 @@ def message(client, feed_id, payload):
     feeds_actions[config['adafruit']['feeds']['ids'][feed_id]](payload, "adafruit")
 
 
-def start():
-    # Reset feeds
+def main():
+    """Adafruit initialisation and main loop."""
+    client = Client(username, api_key)  # basic client
+    mqtt_client = MQTTClient(username, api_key)  # mqtt client
+
     if config['local']:  # do not send requests to adafruit or MQTT when on local PC
         return
+
+    # Reset feeds
     for feed_id, feed_name in config['adafruit']['feeds']['ids'].items():
         client.send(feed_id, config['adafruit']['feeds']['defaults'][feed_name])
     pb.info("-> [server] Adafruit feeds reset")
@@ -46,3 +50,11 @@ def start():
     mqtt_client.on_message = message
     mqtt_client.connect()
     mqtt_client.loop_blocking()
+
+
+def start():
+    """Starting adafruit thread."""
+    global thread
+    pb.info("-> [server] Starting adafruit thread")
+    thread = threading.Thread(target=main)
+    thread.start()

@@ -3,6 +3,7 @@ import schedule
 import threading, time  # for run_continuously
 
 from . import jobs
+from ..server import adafruit
 from ..utils import load_yaml, paths
 
 
@@ -29,7 +30,6 @@ def run_continuously(interval=1):
     return cease_continuous_run
 
 
-
 def file_check():
     """Update jobs if schedules were modified."""
     global schedules
@@ -40,8 +40,16 @@ def file_check():
         jobs.update(schedules)
 
 
+def adafruit_fix():
+    """Fixing adafruit disconnect bug."""
+    if not adafruit.thread.is_alive():
+        pb.warn("-> [server] Adafruit thread died")
+        adafruit.start()
+
+
 def start():
     jobs.update(schedules)
+    schedule.every(30).seconds.do(adafruit_fix)
     schedule.every(1).minutes.do(file_check)
     schedule.every().day.at("13:00").do(jobs.update_sun, schedules)
     run_continuously()  # starts schedule thread
