@@ -1,4 +1,3 @@
-import os
 import printbetter as pb
 from tinydb import TinyDB, Query
 
@@ -15,7 +14,7 @@ USER = Query()
 
 # Exceptions
 class UserNotFound(Exception):
-    """Raised if userId does not existes in DB."""
+    """Raised if user_id does not existes in DB."""
     pass
 
 
@@ -24,11 +23,11 @@ class UserNotFound(Exception):
 ########
 
 class User:
-    def __init__(self, userId):
-        user = users.get(USER.id == userId)
+    def __init__(self, user_id):
+        user = users.get(USER.id == user_id)
         if not user:
-            raise UserNotFound(f"User id {userId} does not exists in database!")
-        self.id = userId
+            raise UserNotFound(f"User id {user_id} does not exists in database!")
+        self.id = user_id
         self.menu_selection = user['menu_selection']
 
     def __repr__(self):
@@ -80,8 +79,8 @@ def create_user(user_id, chat_id, name, authorized=False, admin=False):
     pb.info(f"-> [database] New user created {name} ({user_id})")
 
 
-def is_authorized(userId):
-    user = users.get(USER.id == userId)
+def is_authorized(user_id):
+    user = users.get(USER.id == user_id)
     if user:
         return user['authorized']
 

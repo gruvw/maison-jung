@@ -31,7 +31,7 @@ def run_continuously(interval=1):
 
 
 def file_check():
-    """Update jobs if schedules were modified."""
+    """Updates jobs if schedules were modified."""
     global schedules
     new_schedules = load_yaml(paths["schedules"])
     if schedules != new_schedules:
@@ -41,9 +41,9 @@ def file_check():
 
 
 def adafruit_fix():
-    """Fixing adafruit disconnect bug."""
+    """Fixes adafruit disconnect bug."""
     if not adafruit.thread.is_alive():
-        pb.warn("-> [server] Adafruit thread died")
+        pb.warn("<- [server] Adafruit thread died")
         adafruit.start()
 
 

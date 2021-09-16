@@ -45,7 +45,7 @@ def callback_handler(pattern=None):
 
 
 def verify(func):
-    """Prohibits access to robots & updates user informations."""
+    """Prohibits access to robots & updates known user's informations."""
     @wraps(func)
     def wrapped(update, context, *args, **kwargs):
         if update.effective_user.is_bot:

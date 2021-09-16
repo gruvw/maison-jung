@@ -9,8 +9,6 @@ from ..utils import bool_to_icon, load_yaml, paths
 
 config = load_yaml(paths['config'])
 
-max_retry = config['max_retry']  # nb of retries for wemos requests
-
 
 def lampes(data, source, notify=True):
     """Takes actions (lampes) based on provided data. Returns if successful."""
@@ -93,7 +91,7 @@ def arrosage(data, source, notify=True):
 
 def sendWemos(url, retry=0):
     """Get request to wemos with provided url. Returns if successful."""
-    if retry > max_retry:
+    if retry > config['max_retry']:
         pb.err(f"-> [server] Cannot send {url} to wemos!")
         return False
     elif retry > 0:

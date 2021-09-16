@@ -27,4 +27,3 @@ def bool_to_icon(value, style="checkbox"):
         return "💧" if value else ""
     if style == "clock":
         return "🕑" if value else ""
-

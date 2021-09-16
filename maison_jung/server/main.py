@@ -12,7 +12,7 @@ def reset_wemos():
     for i, action in enumerate(files.get_state("arrosage")):
         vanne_nb = str(i+1) if i+1 >= 10 else "0" + str(i+1)
         success = actions.arrosage(vanne_nb + action, "initialisation", notify=False)
-        if not success:  # if cannot communicate with wemos for vanne n, do not try to send for the other vannes
+        if not success:  # if cannot communicate with wemos for vanne n, do not try to request for the rest
             break
 
 
@@ -25,9 +25,3 @@ def start():
     adafruit.start()  # before scheduler
     scheduler.main.start()
     pb.info("--- Program ready ---")
-
-
-# TODO long term:
-# - Typing
-# - text files in DB (ready for drop)
-# - Flask server (site)
