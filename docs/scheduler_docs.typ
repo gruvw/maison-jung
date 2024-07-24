@@ -1,5 +1,3 @@
-// TODO fix RaspberryPi paths
-
 #set page(paper: "a4", numbering: "1", margin: 2cm)
 #set text(font: "Open Sans", size: 14pt)
 #show link: it => [
@@ -26,7 +24,7 @@
 
 Two programs run on the home RaspberryPi:
 
-- The PHP web server: serving the website through files stored in `/var/www/`
+- The PHP web server: serving the website through files stored in `/var/www/html/`
 - The Python server called "maison-jung": used to take actions on Wemos based microcontrollers on external stimuli (telegram, adafruit, website, ...). \ The python package project code base for the Maison Jung IOT server can be found at: https://github.com/gruvw/maison-jung.
 
 The Python server requires multiple files to be inside a working directory in order to run properly:
@@ -36,11 +34,11 @@ The Python server requires multiple files to be inside a working directory in or
 - `options.yml`: used to build the interactive inline keyboard menu on telegram.
 - `database.json`: TinyDB database.
 
-All those files can be found in the working directory of the Python server: on the RaspberryPi at `/var/www/prog/prod/server`.
+All those files can be found in the working directory of the Python server: on the RaspberryPi at `/var/www/html/prog/prod/`.
 
 == Arduino Programs
 
-Additionally, all the Arduino programs used can be found on the RaspberryPi at `/var/prog/prod/Arduino/...`.
+Additionally, all the Arduino programs can be found on the RaspberryPi at `/var/www/html/prog/arduino/`.
 
 They are not run by the RaspberryPi, but they are stored there for ease of access and use (centralized single source of truth).
 
@@ -178,7 +176,7 @@ tuesday:
   lampes:
   stores:
   arrosage:
-...
+... # other weekdays
 sunday:
   lampes:
   stores:
